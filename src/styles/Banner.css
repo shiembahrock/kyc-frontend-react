@@ -10,9 +10,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 500px;
+  min-height: calc(500px + var(--navbar-height, 80px));
   position: relative;
-  margin-top: calc(-1 * var(--navbar-height, 80px));
+  /*margin-top: calc(-1 * var(--navbar-height, 80px));*/
   padding-top: calc(var(--navbar-height, 80px) + 120px);
 }
 
@@ -66,8 +66,9 @@
 
 @media (max-width: 768px) {
   .banner {
-    padding: 80px 20px;
-    min-height: 400px;
+    padding: 100px 20px 80px 20px;
+    min-height: calc(400px + var(--navbar-height, 80px));
+    padding-top: calc(var(--navbar-height, 80px) + 100px);
   }
 
   .banner-content h1 {
