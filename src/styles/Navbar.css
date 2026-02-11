@@ -89,8 +89,19 @@
 }
 
 @media (max-width: 768px) {
+  .navbar-container {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .navbar-logo {
+    order: 2;
+    margin-left: 15px;
+  }
+
   .navbar-toggle {
     display: flex;
+    order: 1;
   }
 
   .navbar-menu {
@@ -110,6 +121,7 @@
 
   .navbar-menu.active {
     right: 0;
+    left: 0;
   }
 
   .navbar-menu li {
