@@ -151,6 +151,7 @@ const Pricing = () => {
               <button 
                 className="pricing-button"
                 onClick={() => navigate(`/complete-order/${plan.id}`)}
+                disabled={plan.sortOrder !== 1}
               >
                 ORDER NOW
               </button>

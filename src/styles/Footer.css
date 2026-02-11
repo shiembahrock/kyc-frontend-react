@@ -60,8 +60,15 @@
 }
 
 .social-link {
-  display: inline-block;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 5px 0;
+}
+
+.social-link .icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
 }
 
 .footer-bottom {

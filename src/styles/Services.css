@@ -1,7 +1,7 @@
 /* Services Styles */
 .services {
   padding: 80px 20px;
-  background: white;
+  background: #f8f9fa;
 }
 
 .services-container {
@@ -23,7 +23,7 @@
 }
 
 .service-card {
-  background: #f8f9fa;
+  background: white;
   padding: 25px 20px;
   border-radius: 8px;
   text-align: center;

@@ -19,7 +19,7 @@ const Navbar = () => {
 
   const menuItems = [
     { id: 'home', label: 'Home', section: 'banner' },
-    { id: 'product', label: 'Enigmatig Regtech Product', section: 'why-choose' },
+    { id: 'product', label: 'Enigmatig Regtech Product', section: 'about' },
     { id: 'awards', label: 'Awards', section: 'award-winning' },
     { id: 'services', label: 'Services', section: 'services' },
     { id: 'statistics', label: 'Statistics', section: 'statistics' },
