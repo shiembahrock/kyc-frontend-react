@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 import '../styles/CompleteOrder.css';
 
 const CompleteOrder = () => {
@@ -186,8 +187,10 @@ const CompleteOrder = () => {
   }
 
   return (
-    <div className="complete-order-page">
-      <div className="complete-order-container">
+    <>
+      <Navbar />
+      <div className="complete-order-page">
+        <div className="complete-order-container">
         <button className="back-button" onClick={() => navigate(-1)}>
           ← Back
         </button>
@@ -319,8 +322,9 @@ const CompleteOrder = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

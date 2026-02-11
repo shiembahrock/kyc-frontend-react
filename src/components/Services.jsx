@@ -5,39 +5,51 @@ const Services = () => {
   const services = [
     {
       id: 1,
-      title: 'Web Development',
-      description: 'Custom web applications built with modern technologies',
-      icon: '🌐'
+      image: '/images/400_gi-66977974915f5.webp',
+      title: 'KYB',
+      description: 'Helps your company conduct due diligence on your corporate clients through:',
+      list: [
+        'Sanctions Screening',
+        'Adverse Media Screening',
+        'Company Validation',
+        'UBO & Directors',
+        'Corporate Filing',
+        'Group Structures',
+        'Industry Codes and Credit Rating'
+      ]
     },
     {
       id: 2,
-      title: 'Mobile Apps',
-      description: 'Native and cross-platform mobile application development',
-      icon: '📱'
+      image: '/images/400_gi-66977c4005587.webp',
+      title: 'CLIENT CLASSIFICATION',
+      description: 'Categorize clients based on risk profile based on suitability and appropriateness by:',
+      list: [
+        'Risk and Investment needs profiling',
+        'Appropriateness and clearance to make informed decision',
+        'Evaluate and authorize cross-border transactions based on local/global regulatory compliance',
+        'Identify and optimize client access to products and services',
+        'Customize risk products based on client profile'
+      ]
     },
     {
       id: 3,
-      title: 'UI/UX Design',
-      description: 'Beautiful and intuitive user interface design',
-      icon: '🎨'
+      image: '/images/400_gi-66977a4d6ca21.webp',
+      title: 'KYC',
+      description: 'Automate and optimize Know Your Customer (KYC) checks to enhance compliance and streamline comprehensive identification.',
+      list: [
+        'PEP & Sanctions',
+        'Ongoing Monitoring',
+        'Adverse Media Screening',
+        'IDV (ID Verification)',
+        'Liveliness'
+      ]
     },
     {
       id: 4,
-      title: 'Cloud Solutions',
-      description: 'Scalable cloud infrastructure and services',
-      icon: '☁️'
-    },
-    {
-      id: 5,
-      title: 'Data Analytics',
-      description: 'Insights and analytics for better decision making',
-      icon: '📊'
-    },
-    {
-      id: 6,
-      title: 'Consulting',
-      description: 'Expert guidance and strategic consulting services',
-      icon: '💡'
+      image: '/images/400_gi-669777e0ab66f.webp',
+      title: 'ONGOING MONITORING',
+      description: 'Post KYC & AML checks, you can continue to monitor the client profiles, updated risk assessments, track of regulatory or legislation changes and be alerted to any changes to your client\'s status.',
+      list: []
     }
   ];
 
@@ -48,9 +60,18 @@ const Services = () => {
         <div className="services-grid">
           {services.map(service => (
             <div key={service.id} className="service-card">
-              <div className="service-icon">{service.icon}</div>
+              <div className="service-image">
+                <img src={service.image} alt={service.title} />
+              </div>
               <h3>{service.title}</h3>
               <p>{service.description}</p>
+              {service.list.length > 0 && (
+                <ul className="service-list">
+                  {service.list.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>

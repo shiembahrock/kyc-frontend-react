@@ -32,19 +32,19 @@ const ContactUs = () => {
           <div className="contact-info">
             <div className="info-item">
               <h3>📍 Address</h3>
-              <p>123 Business Street<br />New York, NY 10001</p>
+              <p>Shenton Way, Singapore<br />#23-01 Singapore 068805</p>
             </div>
-            <div className="info-item">
+            {/* <div className="info-item">
               <h3>📞 Phone</h3>
               <p>+1 (555) 123-4567</p>
-            </div>
+            </div> */}
             <div className="info-item">
               <h3>✉️ Email</h3>
-              <p>info@company.com</p>
+              <p>regtech@enigmatig.com</p>
             </div>
             <div className="info-item">
               <h3>🕐 Hours</h3>
-              <p>Monday - Friday: 9AM - 6PM<br />Saturday - Sunday: Closed</p>
+              <p>Monday - Friday: 8AM - 7PM<br />Saturday - Sunday: Closed</p>
             </div>
           </div>
 

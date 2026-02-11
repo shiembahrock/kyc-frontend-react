@@ -1,0 +1,68 @@
+.award-winning {
+  padding: 80px 20px;
+  background: white;
+}
+
+.award-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.award-winning h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 50px;
+}
+
+.awards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.award-box {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  color: white;
+}
+
+.award-box:hover {
+  transform: translateY(-5px);
+}
+
+.award-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+}
+
+.award-box h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (max-width: 992px) {
+  .awards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .award-winning {
+    padding: 60px 20px;
+  }
+
+  .award-winning h2 {
+    font-size: 2rem;
+  }
+
+  .awards-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

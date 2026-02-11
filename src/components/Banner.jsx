@@ -5,8 +5,8 @@ const Banner = () => {
   return (
     <section className="banner">
       <div className="banner-content">
-        <h1>Welcome to Our Service</h1>
-        <p>Your trusted partner for excellence and innovation</p>
+        <h1>Welcome to Enigmatig</h1>
+        <p>Simplifying Client Onboarding in Minutes</p>
         <button className="cta-button">Get Started</button>
       </div>
     </section>

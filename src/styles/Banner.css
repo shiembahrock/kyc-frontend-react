@@ -1,6 +1,9 @@
 /* Banner Styles */
 .banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: url('/images/home-bg.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: white;
   padding: 120px 20px;
   text-align: center;
@@ -8,10 +11,26 @@
   align-items: center;
   justify-content: center;
   min-height: 500px;
+  position: relative;
+  margin-top: calc(-1 * var(--navbar-height, 80px));
+  padding-top: calc(var(--navbar-height, 80px) + 120px);
+}
+
+.banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
 
 .banner-content {
   max-width: 600px;
+  position: relative;
+  z-index: 2;
 }
 
 .banner-content h1 {
