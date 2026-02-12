@@ -18,7 +18,7 @@ function PaymentSuccess() {
             <h1>Thank You!</h1>
             <div className="success-message">
               <p>Thank you for ordering our service.</p>
-              <p>Please check your email to proceed.</p>
+              <p>Please check your email inbox, find the email sent from <strong>Pass</strong> with the subject <strong>Assessment Invitation</strong> to proceed.</p>
               {orderCode && (
                 <div className="order-code">
                   <strong>Order Code:</strong> {orderCode}
