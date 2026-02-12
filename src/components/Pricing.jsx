@@ -95,7 +95,8 @@ const Pricing = () => {
         // });
 
         const response = await fetch(
-            'https://ht8c7p7tt4.execute-api.us-east-1.amazonaws.com/dev/service-prices'
+             'https://ht8c7p7tt4.execute-api.us-east-1.amazonaws.com/dev/service-prices'
+            //'http://localhost:8000/service-prices'
         );
         
         if (!response.ok) {
@@ -114,7 +115,7 @@ const Pricing = () => {
             name: item.service_name,
             price: formattedPrice,
             features: defaultFeatures[planIndex] || defaultFeatures[1],
-            popular: planIndex === 2,
+            popular: item.is_popular,
             sortOrder: item.sort_order
           };
         });
