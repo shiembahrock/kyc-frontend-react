@@ -1,7 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/ContactUs.css';
 
 const ContactUs = () => {
+  const titleRef = useRef(null);
+  const infoRef = useRef(null);
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (titleRef.current) observer.observe(titleRef.current);
+    if (infoRef.current) observer.observe(infoRef.current);
+    if (formRef.current) observer.observe(formRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,9 +50,9 @@ const ContactUs = () => {
   return (
     <section id="contact" className="contact">
       <div className="contact-container">
-        <h2>Contact Us</h2>
+        <h2 ref={titleRef} className="bounce-in">Contact Us</h2>
         <div className="contact-content">
-          <div className="contact-info">
+          <div ref={infoRef} className="contact-info fade-in-left">
             <div className="info-item">
               <h3>📍 Address</h3>
               <p>Shenton Way, Singapore<br />#23-01 Singapore 068805</p>
@@ -48,7 +71,7 @@ const ContactUs = () => {
             </div>
           </div>
 
-          <form className="contact-form" onSubmit={handleSubmit}>
+          <form ref={formRef} className="contact-form fade-in-right" onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="name">Name</label>
               <input

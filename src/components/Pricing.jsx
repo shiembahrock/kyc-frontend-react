@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Pricing.css';
 
@@ -7,6 +7,28 @@ const Pricing = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const titleRef = useRef(null);
+  const cardRefs = useRef([]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (titleRef.current) observer.observe(titleRef.current);
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [plans]);
 
   const defaultFeatures = {
     1: [
@@ -128,12 +150,13 @@ const Pricing = () => {
   return (
     <section id="pricing" className="pricing">
       <div className="pricing-container">
-        <h2>Pricing Plans</h2>
+        <h2 ref={titleRef} className="bounce-in">Pricing Plans</h2>
         <div className="pricing-grid">
-          {plans.map(plan => (
+          {plans.map((plan, index) => (
             <div 
               key={plan.id} 
-              className={`pricing-card ${plan.popular ? 'popular' : ''}`}
+              className={`pricing-card fade-in-up ${plan.popular ? 'popular' : ''}`}
+              ref={(el) => (cardRefs.current[index] = el)}
             >
               {plan.popular && <div className="badge">Most Popular</div>}
               <h3>{plan.name}</h3>

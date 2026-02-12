@@ -1,7 +1,30 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import '../styles/Services.css';
 
 const Services = () => {
+  const titleRef = useRef(null);
+  const cardRefs = useRef([]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (titleRef.current) observer.observe(titleRef.current);
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const services = [
     {
       id: 1,
@@ -56,10 +79,14 @@ const Services = () => {
   return (
     <section id="services" className="services">
       <div className="services-container">
-        <h2>Our Services</h2>
+        <h2 ref={titleRef} className="bounce-in">Our Services</h2>
         <div className="services-grid">
-          {services.map(service => (
-            <div key={service.id} className="service-card">
+          {services.map((service, index) => (
+            <div 
+              key={service.id} 
+              className="service-card fade-in-up"
+              ref={(el) => (cardRefs.current[index] = el)}
+            >
               <div className="service-image">
                 <img src={service.image} alt={service.title} />
               </div>

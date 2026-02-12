@@ -66,3 +66,26 @@
     gap: 20px;
   }
 }
+
+/* Scroll Animations */
+.bounce-in {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.bounce-in.animate {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-in-up.animate {
+  opacity: 1;
+  transform: translateY(0);
+}
