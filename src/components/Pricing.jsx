@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 import '../styles/Pricing.css';
 
 const Pricing = () => {
@@ -87,16 +88,9 @@ const Pricing = () => {
     const fetchPricingData = async () => {
       try {
         setLoading(true);
-        // const response = await fetch('https://ht8c7p7tt4.execute-api.us-east-1.amazonaws.com/dev/service-prices', {
-        //   method: 'GET',
-        //   headers: {
-        //     'Content-Type': 'application/json'
-        //   }
-        // });
-
+        
         const response = await fetch(
-             'https://ht8c7p7tt4.execute-api.us-east-1.amazonaws.com/dev/service-prices'
-            //'http://localhost:8000/service-prices'
+             `${API_BASE_URL}/service-prices`
         );
         
         if (!response.ok) {

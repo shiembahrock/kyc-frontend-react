@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 import '../styles/Navbar.css';
 
 const Navbar = () => {
@@ -132,7 +133,7 @@ const Navbar = () => {
     
     try {
       setIsSubmitting(true);
-      const response = await fetch('http://localhost:8000/auth/email-get-otp', {
+      const response = await fetch(`${API_BASE_URL}/auth/email-get-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -175,7 +176,7 @@ const Navbar = () => {
     try {
       setIsSubmitting(true);
       
-      const response = await fetch('http://localhost:8000/auth/submit-otp', {
+      const response = await fetch(`${API_BASE_URL}/auth/submit-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -223,7 +224,7 @@ const Navbar = () => {
     
     try {
       const trimmedEmail = email.trim();
-      await fetch('http://localhost:8000/auth/email-get-otp', {
+      await fetch(`${API_BASE_URL}/auth/email-get-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { API_BASE_URL } from '../config';
 import '../styles/CompleteOrder.css';
 
 const CompleteOrder = () => {
@@ -61,7 +62,7 @@ const CompleteOrder = () => {
         setLoading(true);
         
         // Fetch service data
-        const serviceResponse = await fetch(`https://ht8c7p7tt4.execute-api.us-east-1.amazonaws.com/dev/service-prices/${serviceId}`);
+        const serviceResponse = await fetch(`${API_BASE_URL}/service-prices/${serviceId}`);
         if (!serviceResponse.ok) {
           throw new Error(`Failed to fetch service data: ${serviceResponse.status}`);
         }
@@ -70,7 +71,7 @@ const CompleteOrder = () => {
         setServiceData(service);
 
         // Fetch countries
-        const countriesResponse = await fetch('https://ht8c7p7tt4.execute-api.us-east-1.amazonaws.com/dev/countries');
+        const countriesResponse = await fetch(`${API_BASE_URL}/countries`);
         if (!countriesResponse.ok) {
           throw new Error(`Failed to fetch countries: ${countriesResponse.status}`);
         }
@@ -132,7 +133,7 @@ const CompleteOrder = () => {
         serviceData
       }); // Debug log
 
-      const res = await fetch('https://ht8c7p7tt4.execute-api.us-east-1.amazonaws.com/dev/checkout/start', {
+      const res = await fetch(`${API_BASE_URL}/checkout/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
