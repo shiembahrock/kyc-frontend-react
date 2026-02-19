@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { API_EXTERNAL_BASE_URL } from '../config';
+import { API_EXTERNAL_BASE_URL, ADMINISTRATOR_EMAIL_ADDRESS } from '../config';
 import '../styles/ContactUs.css';
 
 const ContactUs = () => {
@@ -83,7 +83,7 @@ const ContactUs = () => {
       const emailBody = `Name: ${formData.name}<br/>Email: ${formData.email}<br/>Phone: ${formData.phone}<br/>Message:<br/>${formData.message}`;
       
       const payload = {
-        to_email: 'widodo.work@gmail.com',
+        to_email: ADMINISTRATOR_EMAIL_ADDRESS,
         subject: 'KYC&AML - ContactUs',
         body: emailBody,
         is_html: true
