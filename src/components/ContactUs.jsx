@@ -89,7 +89,7 @@ const ContactUs = () => {
         is_html: true
       };
       
-      const response = await fetch(API_EXTERNAL_BASE_URL, {
+      const response = await fetch(`${API_EXTERNAL_BASE_URL}/sendemailsmtp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
