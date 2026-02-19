@@ -16,6 +16,20 @@ const Navbar = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(300);
   const [userInfo, setUserInfo] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [activeMenu, setActiveMenu] = useState('Profile');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    country: '',
+    phone: '',
+    companyName: '',
+    address: '',
+    city: '',
+    zipCode: '',
+    profileImage: null
+  });
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -98,8 +112,39 @@ const Navbar = () => {
     const userInfo = localStorage.getItem('_userLoggedInInfo');
     if (!userInfo) {
       setShowLoginModal(true);
+    } else {
+      setShowUserModal(true);
     }
   };
+
+  const handleCloseUserModal = () => {
+    setShowUserModal(false);
+    setActiveMenu('Profile');
+  };
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem('_userLoggedInInfo');
+    setUserInfo(null);
+    setShowUserModal(false);
+    setShowLogoutModal(false);
+    navigate('/');
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
+
+  const userMenuItems = [
+    { name: 'Profile', icon: '👤' },
+    { name: 'Notifications', icon: '🔔' },
+    { name: 'Orders', icon: '📦' },
+    { name: 'Search Histories', icon: '🔍' },
+    { name: 'Logout', icon: '🚪' }
+  ];
 
   const handleCloseModal = () => {
     setShowLoginModal(false);
@@ -245,6 +290,31 @@ const Navbar = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfileData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileData(prev => ({ ...prev, profileImage: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setProfileData(prev => ({ ...prev, profileImage: null }));
+  };
+
+  const handleSaveProfile = () => {
+    console.log('Profile data:', profileData);
+    alert('Profile saved successfully!');
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -360,6 +430,129 @@ const Navbar = () => {
                 )}
               </p>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showUserModal && (
+        <div className="user-modal-overlay" onClick={handleCloseUserModal}>
+          <div className="user-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-button" onClick={handleCloseUserModal}>×</button>
+            <div className="user-modal-content">
+              <div className="user-modal-sidebar">
+                <ul className="user-menu-list">
+                  {userMenuItems.map((menu) => (
+                    <li 
+                      key={menu.name}
+                      className={activeMenu === menu.name ? 'active' : ''}
+                      onClick={() => menu.name === 'Logout' ? handleLogout() : setActiveMenu(menu.name)}
+                    >
+                      <span className="menu-icon">{menu.icon}</span>
+                      <span className="menu-text">{menu.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="user-modal-main">
+                <h2>{activeMenu}</h2>
+                <div className="user-modal-content-area">
+                  {activeMenu === 'Profile' && (
+                    <div className="profile-form">
+                      <h3 className="profile-greeting">Hi, <strong>{userInfo?.email}</strong></h3>
+                      
+                      <div className="profile-image-section">
+                        <div className="profile-image-container">
+                          <div className="profile-image">
+                            {profileData.profileImage ? (
+                              <img src={profileData.profileImage} alt="Profile" />
+                            ) : (
+                              <div className="profile-placeholder">{userInfo?.email.charAt(0).toUpperCase()}</div>
+                            )}
+                            {profileData.profileImage && (
+                              <button className="remove-image-btn" onClick={handleRemoveImage}>×</button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="upload-section">
+                          <input 
+                            type="file" 
+                            id="profileImage" 
+                            accept="image/*" 
+                            onChange={handleImageUpload}
+                            style={{ display: 'none' }}
+                          />
+                          <label htmlFor="profileImage" className="upload-btn">Upload Image</label>
+                        </div>
+                      </div>
+
+                      <div className="profile-form-row">
+                        <div className="profile-form-group">
+                          <label>First Name</label>
+                          <input type="text" name="firstName" value={profileData.firstName} onChange={handleProfileChange} />
+                        </div>
+                        <div className="profile-form-group">
+                          <label>Last Name</label>
+                          <input type="text" name="lastName" value={profileData.lastName} onChange={handleProfileChange} />
+                        </div>
+                      </div>
+
+                      <div className="profile-form-row">
+                        <div className="profile-form-group">
+                          <label>Country</label>
+                          <input type="text" name="country" value={profileData.country} onChange={handleProfileChange} />
+                        </div>
+                        <div className="profile-form-group">
+                          <label>Phone</label>
+                          <input type="tel" name="phone" value={profileData.phone} onChange={handleProfileChange} />
+                        </div>
+                      </div>
+
+                      <div className="profile-form-row">
+                        <div className="profile-form-group">
+                          <label>Company Name</label>
+                          <input type="text" name="companyName" value={profileData.companyName} onChange={handleProfileChange} />
+                        </div>
+                        <div className="profile-form-group">
+                          <label>Address</label>
+                          <input type="text" name="address" value={profileData.address} onChange={handleProfileChange} />
+                        </div>
+                      </div>
+
+                      <div className="profile-form-row">
+                        <div className="profile-form-group">
+                          <label>City</label>
+                          <input type="text" name="city" value={profileData.city} onChange={handleProfileChange} />
+                        </div>
+                        <div className="profile-form-group">
+                          <label>ZIP/Postal Code</label>
+                          <input type="text" name="zipCode" value={profileData.zipCode} onChange={handleProfileChange} />
+                        </div>
+                      </div>
+
+                      <div className="profile-form-actions">
+                        <button className="save-profile-btn" onClick={handleSaveProfile}>Save</button>
+                      </div>
+                    </div>
+                  )}
+                  {activeMenu === 'Notifications' && <p>No notifications</p>}
+                  {activeMenu === 'Orders' && <p>No orders yet</p>}
+                  {activeMenu === 'Search Histories' && <p>No search history</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLogoutModal && (
+        <div className="login-modal-overlay" onClick={cancelLogout}>
+          <div className="login-modal logout-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Confirm Logout</h2>
+            <p className="logout-message">Are you sure you want to logout?</p>
+            <div className="logout-actions">
+              <button className="cancel-btn" onClick={cancelLogout}>Cancel</button>
+              <button className="confirm-btn" onClick={confirmLogout}>Logout</button>
+            </div>
           </div>
         </div>
       )}
