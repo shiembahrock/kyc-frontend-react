@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_EXTERNAL_BASE_URL } from '../config';
 import '../styles/ContactUs.css';
 
 const ContactUs = () => {
@@ -31,6 +32,25 @@ const ContactUs = () => {
     phone: '',
     message: ''
   });
+  const [phoneError, setPhoneError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem('_userLoggedInInfo');
+    if (userInfo) {
+      try {
+        const parsedInfo = JSON.parse(userInfo);
+        if (parsedInfo.email) {
+          setFormData(prev => ({
+            ...prev,
+            email: parsedInfo.email
+          }));
+        }
+      } catch (error) {
+        console.error('Error parsing user info:', error);
+      }
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,13 +58,58 @@ const ContactUs = () => {
       ...prev,
       [name]: value
     }));
+    
+    if (name === 'phone') {
+      setPhoneError('');
+    }
   };
 
-  const handleSubmit = (e) => {
+  const validatePhone = (phone) => {
+    const phoneRegex = /^\+\d{1,3}\d{6,14}$/;
+    return phoneRegex.test(phone.replace(/[\s()-]/g, ''));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    
+    if (!validatePhone(formData.phone)) {
+      setPhoneError('Please enter a valid phone number with country code (e.g., +1234567890)');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const emailBody = `Name: ${formData.name}<br/>Email: ${formData.email}<br/>Phone: ${formData.phone}<br/>Message:<br/>${formData.message}`;
+      
+      const payload = {
+        to_email: 'widodo.work@gmail.com',
+        subject: 'KYC&AML - ContactUs',
+        body: emailBody,
+        is_html: true
+      };
+      
+      const response = await fetch(API_EXTERNAL_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+      
+      alert('Thank you for your message! We will get back to you soon.');
+      setFormData({ name: '', email: '', phone: '', message: '' });
+      setPhoneError('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -102,7 +167,12 @@ const ContactUs = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
+                placeholder="+1234567890"
+                className={phoneError ? 'error' : ''}
+                required
               />
+              {phoneError && <span className="error-message">{phoneError}</span>}
+              <small className="input-hint">Format: +[country code][number] (e.g., +6512345678, +14155551234)</small>
             </div>
             <div className="form-group">
               <label htmlFor="message">Message</label>
@@ -115,7 +185,9 @@ const ContactUs = () => {
                 required
               ></textarea>
             </div>
-            <button type="submit" className="submit-button">Send Message</button>
+            <button type="submit" className="submit-button" disabled={isSubmitting}>
+              {isSubmitting ? 'Sending...' : 'Send Message'}
+            </button>
           </form>
         </div>
       </div>

@@ -146,3 +146,22 @@
   opacity: 1;
   transform: translateX(0);
 }
+
+/* Phone Validation Styles */
+.form-group input.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.input-hint {
+  color: #666;
+  font-size: 0.875rem;
+  margin-top: 5px;
+  display: block;
+}
