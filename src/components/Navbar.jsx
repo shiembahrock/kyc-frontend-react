@@ -58,6 +58,19 @@ const Navbar = () => {
     is_desc: true
   });
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [searchHistoriesData, setSearchHistoriesData] = useState({
+    data_list: [],
+    total_count: 0,
+    current_page_number: 1,
+    is_has_more: false
+  });
+  const [searchHistoriesPagination, setSearchHistoriesPagination] = useState({
+    page_size: 5,
+    page_number: 1,
+    sort_by: 'completed_time',
+    is_desc: true
+  });
+  const [isLoadingSearchHistories, setIsLoadingSearchHistories] = useState(false);
   const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -220,7 +233,15 @@ const Navbar = () => {
         ordersPagination.is_desc
       );
     }
-  }, [activeMenu, showUserModal, ordersPagination]);
+    if (activeMenu === 'Search Histories' && showUserModal) {
+      get_search_histories_by_guest_account_id(
+        searchHistoriesPagination.page_size,
+        searchHistoriesPagination.page_number,
+        searchHistoriesPagination.sort_by,
+        searchHistoriesPagination.is_desc
+      );
+    }
+  }, [activeMenu, showUserModal, ordersPagination, searchHistoriesPagination]);
 
   const handlePageSizeChange = (e) => {
     setOrdersPagination(prev => ({
@@ -257,6 +278,43 @@ const Navbar = () => {
 
   const getTotalPages = () => {
     return Math.ceil(ordersData.total_count / ordersPagination.page_size);
+  };
+
+  const handleSearchHistoriesPageSizeChange = (e) => {
+    setSearchHistoriesPagination(prev => ({
+      ...prev,
+      page_size: parseInt(e.target.value),
+      page_number: 1
+    }));
+  };
+
+  const handleSearchHistoriesPageChange = (newPage) => {
+    setSearchHistoriesPagination(prev => ({
+      ...prev,
+      page_number: newPage
+    }));
+  };
+
+  const handleSearchHistoriesSortChange = (columnName) => {
+    setSearchHistoriesPagination(prev => {
+      const isSameColumn = prev.sort_by === columnName;
+      return {
+        ...prev,
+        sort_by: columnName,
+        is_desc: isSameColumn ? !prev.is_desc : true
+      };
+    });
+  };
+
+  const getSearchHistoriesSortIcon = (columnName) => {
+    if (searchHistoriesPagination.sort_by !== columnName) {
+      return '⇅';
+    }
+    return searchHistoriesPagination.is_desc ? '↓' : '↑';
+  };
+
+  const getSearchHistoriesTotalPages = () => {
+    return Math.ceil(searchHistoriesData.total_count / searchHistoriesPagination.page_size);
   };
 
   const handleCloseModal = () => {
@@ -574,6 +632,47 @@ const Navbar = () => {
       showToast('Failed to load orders', 'error');
     } finally {
       setIsLoadingOrders(false);
+    }
+  };
+
+  const get_search_histories_by_guest_account_id = async (pageSize, pageNumber, sortBy = 'completed_time', isDesc = true) => {
+    try {
+      setIsLoadingSearchHistories(true);
+      const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
+      
+      const response = await fetch(`${API_BASE_URL}/guest-account/search-histories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'GuestAccountToken': userInfo.token
+        },
+        body: JSON.stringify({
+          guest_account_id: userInfo.guest_account_id,
+          sort_by: sortBy,
+          is_desc: isDesc,
+          page_size: pageSize,
+          page_number: pageNumber
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token_expiry_on) {
+        userInfo.expiry_on = data.token_expiry_on;
+        localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
+        
+        setSearchHistoriesData({
+          data_list: data.data_list || [],
+          total_count: data.total_count || 0,
+          current_page_number: data.current_page_number || 1,
+          is_has_more: data.is_has_more || false
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching search histories:', error);
+      showToast('Failed to load search histories', 'error');
+    } finally {
+      setIsLoadingSearchHistories(false);
     }
   };
 
@@ -1137,7 +1236,112 @@ const Navbar = () => {
                       )}
                     </div>
                   )}
-                  {activeMenu === 'Search Histories' && <p>No search history</p>}
+                  {activeMenu === 'Search Histories' && (
+                    <div className="search-histories-content">
+                      {isLoadingSearchHistories ? (
+                        <p>Loading search histories...</p>
+                      ) : searchHistoriesData.data_list.length === 0 ? (
+                        <p>No search history</p>
+                      ) : (
+                        <>
+                          <div className="page-size-control">
+                            <label>
+                              Page size:
+                              <select value={searchHistoriesPagination.page_size} onChange={handleSearchHistoriesPageSizeChange}>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                              </select>
+                            </label>
+                          </div>
+                          <div className="orders-table-container">
+                            <table className="orders-table">
+                              <thead>
+                                <tr>
+                                  <th className="sortable-header" onClick={() => handleSearchHistoriesSortChange('completed_time')}>
+                                    Completed Time {getSearchHistoriesSortIcon('completed_time')}
+                                  </th>
+                                  <th>Reference Key</th>
+                                  <th className="sortable-header" onClick={() => handleSearchHistoriesSortChange('first_name')}>
+                                    First Name {getSearchHistoriesSortIcon('first_name')}
+                                  </th>
+                                  <th className="sortable-header" onClick={() => handleSearchHistoriesSortChange('middle_name')}>
+                                    Middle Name {getSearchHistoriesSortIcon('middle_name')}
+                                  </th>
+                                  <th className="sortable-header" onClick={() => handleSearchHistoriesSortChange('last_name')}>
+                                    Last Name {getSearchHistoriesSortIcon('last_name')}
+                                  </th>
+                                  <th className="sortable-header" onClick={() => handleSearchHistoriesSortChange('dob')}>
+                                    DOB {getSearchHistoriesSortIcon('dob')}
+                                  </th>
+                                  <th className="sortable-header" onClick={() => handleSearchHistoriesSortChange('rag_result')}>
+                                    RAG Result {getSearchHistoriesSortIcon('rag_result')}
+                                  </th>
+                                  <th className="sortable-header" onClick={() => handleSearchHistoriesSortChange('pdf_sent')}>
+                                    PDF Sent {getSearchHistoriesSortIcon('pdf_sent')}
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {searchHistoriesData.data_list.map((history, index) => (
+                                  <tr key={index}>
+                                    <td>{new Date(history.completed_time).toLocaleString()}</td>
+                                    <td>{history.reference_key}</td>
+                                    <td>{history.first_name}</td>
+                                    <td>{history.middle_name}</td>
+                                    <td>{history.last_name}</td>
+                                    <td>{new Date(history.dob).toLocaleString()}</td>
+                                    <td>{history.rag_result}</td>
+                                    <td>
+                                      {history.pdf_sent ? (
+                                        <span style={{ color: 'green', fontSize: '1.2rem' }}>✅</span>
+                                      ) : (
+                                        <span style={{ color: 'red', fontSize: '1.2rem' }}>❌</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="pagination-info">
+                            Total row(s): {searchHistoriesData.total_count}
+                          </div>
+                          <div className="pagination-buttons">
+                            <button 
+                              onClick={() => handleSearchHistoriesPageChange(1)} 
+                              disabled={searchHistoriesPagination.page_number === 1}
+                            >
+                              First
+                            </button>
+                            <button 
+                              onClick={() => handleSearchHistoriesPageChange(searchHistoriesPagination.page_number - 1)} 
+                              disabled={searchHistoriesPagination.page_number === 1}
+                            >
+                              Previous
+                            </button>
+                            <span className="page-indicator">
+                              Page {searchHistoriesPagination.page_number} of {getSearchHistoriesTotalPages()}
+                            </span>
+                            <button 
+                              onClick={() => handleSearchHistoriesPageChange(searchHistoriesPagination.page_number + 1)} 
+                              disabled={searchHistoriesPagination.page_number >= getSearchHistoriesTotalPages()}
+                            >
+                              Next
+                            </button>
+                            <button 
+                              onClick={() => handleSearchHistoriesPageChange(getSearchHistoriesTotalPages())} 
+                              disabled={searchHistoriesPagination.page_number >= getSearchHistoriesTotalPages()}
+                            >
+                              Last
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
