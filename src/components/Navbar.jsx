@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 import { API_BASE_URL } from '../config';
 import '../styles/Navbar.css';
 
@@ -44,6 +45,20 @@ const Navbar = () => {
     phone_promotion_subscription: false,
     sms_system_messages: false
   });
+  const [ordersData, setOrdersData] = useState({
+    data_list: [],
+    total_count: 0,
+    current_page_number: 1,
+    is_has_more: false
+  });
+  const [ordersPagination, setOrdersPagination] = useState({
+    page_size: 5,
+    page_number: 1,
+    sort_by: 'transaction_date',
+    is_desc: true
+  });
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -196,6 +211,54 @@ const Navbar = () => {
     { name: 'Logout', icon: '🚪' }
   ];
 
+  useEffect(() => {
+    if (activeMenu === 'Orders' && showUserModal) {
+      get_order_payments_by_guest_account(
+        ordersPagination.page_size,
+        ordersPagination.page_number,
+        ordersPagination.sort_by,
+        ordersPagination.is_desc
+      );
+    }
+  }, [activeMenu, showUserModal, ordersPagination]);
+
+  const handlePageSizeChange = (e) => {
+    setOrdersPagination(prev => ({
+      ...prev,
+      page_size: parseInt(e.target.value),
+      page_number: 1
+    }));
+  };
+
+  const handlePageChange = (newPage) => {
+    setOrdersPagination(prev => ({
+      ...prev,
+      page_number: newPage
+    }));
+  };
+
+  const handleSortChange = (columnName) => {
+    setOrdersPagination(prev => {
+      const isSameColumn = prev.sort_by === columnName;
+      return {
+        ...prev,
+        sort_by: columnName,
+        is_desc: isSameColumn ? !prev.is_desc : true
+      };
+    });
+  };
+
+  const getSortIcon = (columnName) => {
+    if (ordersPagination.sort_by !== columnName) {
+      return '⇅';
+    }
+    return ordersPagination.is_desc ? '↓' : '↑';
+  };
+
+  const getTotalPages = () => {
+    return Math.ceil(ordersData.total_count / ordersPagination.page_size);
+  };
+
   const handleCloseModal = () => {
     setShowLoginModal(false);
     setShowOtpModal(false);
@@ -306,7 +369,7 @@ const Navbar = () => {
       // Fetch guest account profile
       await get_guest_account_profile(guestAccountId, data.token);
       
-      alert('Login Success');
+      showToast('Login Success', 'success');
       handleCloseModal();
     } catch (error) {
       console.error('Error:', error);
@@ -458,15 +521,59 @@ const Navbar = () => {
         userInfo.guest_account_notification_setting[columnName] = columnValue;
         userInfo.expiry_on = data.token_expiry_on;
         localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
+        showToast('Notification settings updated', 'success');
         return true;
       } else {
         userInfo.expiry_on = data.token_expiry_on;
         localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
+        showToast('Failed to update notification settings', 'error');
         return false;
       }
     } catch (error) {
       console.error('Error updating notification settings:', error);
+      showToast('Error updating notification settings', 'error');
       return false;
+    }
+  };
+
+  const get_order_payments_by_guest_account = async (pageSize, pageNumber, sortBy = 'transaction_date', isDesc = true) => {
+    try {
+      setIsLoadingOrders(true);
+      const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
+      
+      const response = await fetch(`${API_BASE_URL}/guest-account/order-payments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'GuestAccountToken': userInfo.token
+        },
+        body: JSON.stringify({
+          guest_account_id: userInfo.guest_account_id,
+          sort_by: sortBy,
+          is_desc: isDesc,
+          page_size: pageSize,
+          page_number: pageNumber
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token_expiry_on) {
+        userInfo.expiry_on = data.token_expiry_on;
+        localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
+        
+        setOrdersData({
+          data_list: data.data_list || [],
+          total_count: data.total_count || 0,
+          current_page_number: data.current_page_number || 1,
+          is_has_more: data.is_has_more || false
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      showToast('Failed to load orders', 'error');
+    } finally {
+      setIsLoadingOrders(false);
     }
   };
 
@@ -485,7 +592,7 @@ const Navbar = () => {
       profileData.zipCode !== (userInfo.guest_account?.zip_code || '');
     
     if (!hasChanges) {
-      alert('Nothing changes on profile data!');
+      showToast('Nothing changes on profile data!', 'warning');
       return;
     }
 
@@ -571,7 +678,7 @@ const Navbar = () => {
         };
         userInfo.expiry_on = data.token_expiry_on;
         localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
-        alert('Profile saved successfully!');
+        showToast('Profile saved successfully!', 'success');
       } else if (data.message === 'failed' || data.message === 'timeout') {
         userInfo.expiry_on = data.token_expiry_on;
         localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
@@ -907,7 +1014,129 @@ const Navbar = () => {
                       </div>
                     </div>
                   )}
-                  {activeMenu === 'Orders' && <p>No orders yet</p>}
+                  {activeMenu === 'Orders' && (
+                    <div className="orders-content">
+                      {isLoadingOrders ? (
+                        <p>Loading orders...</p>
+                      ) : ordersData.data_list.length === 0 ? (
+                        <p>No orders yet</p>
+                      ) : (
+                        <>
+                          <div className="page-size-control">
+                            <label>
+                              Page size:
+                              <select value={ordersPagination.page_size} onChange={handlePageSizeChange}>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                              </select>
+                            </label>
+                          </div>
+                          <div className="orders-table-container">
+                            <table className="orders-table">
+                              <thead>
+                                <tr>
+                                  <th className="sortable-header" onClick={() => handleSortChange('transaction_date')}>
+                                    Transaction Date {getSortIcon('transaction_date')}
+                                  </th>
+                                  <th className="sortable-header" onClick={() => handleSortChange('transaction_expired_date')}>
+                                    Expired Date {getSortIcon('transaction_expired_date')}
+                                  </th>
+                                  <th className="sortable-header" onClick={() => handleSortChange('service_name')}>
+                                    Service Name {getSortIcon('service_name')}
+                                  </th>
+                                  <th>Order Code</th>
+                                  <th className="sortable-header" onClick={() => handleSortChange('usage_status')}>
+                                    Service Status {getSortIcon('usage_status')}
+                                  </th>
+                                  <th className="sortable-header" onClick={() => handleSortChange('payment_status')}>
+                                    Payment Status {getSortIcon('payment_status')}
+                                  </th>
+                                  <th>Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {ordersData.data_list.map((order, index) => {
+                                  const usageStatusText = order.usage_status === 0 ? 'Unuseable' : order.usage_status === 1 ? 'Usable' : 'Completed';
+                                  const isNotExpired = new Date(order.transaction_expired_date) > new Date();
+                                  return (
+                                    <tr key={index}>
+                                      <td>{new Date(order.transaction_date).toLocaleString()}</td>
+                                      <td>{new Date(order.transaction_expired_date).toLocaleString()}</td>
+                                      <td>{order.service_name}</td>
+                                      <td>{order.order_code}</td>
+                                      <td>{usageStatusText}</td>
+                                      <td>{order.payment_status}</td>
+                                      <td>
+                                        <div className="action-buttons">
+                                          {order.usage_status === 0 && (order.payment_status === 'unpaid' || order.payment_status === '') && isNotExpired && order.checkout_url && (
+                                            <a href={order.checkout_url} target="_blank" rel="noopener noreferrer" className="action-btn">
+                                              💳
+                                            </a>
+                                          )}
+                                          {order.usage_status === 1 && order.payment_status === 'paid' && (
+                                            <>
+                                              <a href={`/Search-Service?ordercode=${order.order_code}`} className="action-btn">
+                                                🔍
+                                              </a>
+                                              {order.psp_stripe_receipt_url && (
+                                                <a href={order.psp_stripe_receipt_url} target="_blank" rel="noopener noreferrer" className="action-btn">
+                                                  🧾
+                                                </a>
+                                              )}
+                                            </>
+                                          )}
+                                          {order.usage_status === 2 && order.payment_status === 'paid' && order.psp_stripe_receipt_url && (
+                                            <a href={order.psp_stripe_receipt_url} target="_blank" rel="noopener noreferrer" className="action-btn">
+                                              🧾
+                                            </a>
+                                          )}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="pagination-info">
+                            Total row(s): {ordersData.total_count}
+                          </div>
+                          <div className="pagination-buttons">
+                            <button 
+                              onClick={() => handlePageChange(1)} 
+                              disabled={ordersPagination.page_number === 1}
+                            >
+                              First
+                            </button>
+                            <button 
+                              onClick={() => handlePageChange(ordersPagination.page_number - 1)} 
+                              disabled={ordersPagination.page_number === 1}
+                            >
+                              Previous
+                            </button>
+                            <span className="page-indicator">
+                              Page {ordersPagination.page_number} of {getTotalPages()}
+                            </span>
+                            <button 
+                              onClick={() => handlePageChange(ordersPagination.page_number + 1)} 
+                              disabled={ordersPagination.page_number >= getTotalPages()}
+                            >
+                              Next
+                            </button>
+                            <button 
+                              onClick={() => handlePageChange(getTotalPages())} 
+                              disabled={ordersPagination.page_number >= getTotalPages()}
+                            >
+                              Last
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                   {activeMenu === 'Search Histories' && <p>No search history</p>}
                 </div>
               </div>
