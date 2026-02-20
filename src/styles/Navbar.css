@@ -286,6 +286,71 @@
   color: #764ba2;
 }
 
+.notifications-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.notification-item span {
+  font-size: 1rem;
+  color: #333;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+}
+
 /* User Profile Modal */
 .user-modal-overlay {
   position: fixed;
@@ -494,6 +559,43 @@
   margin: 0 auto;
 }
 
+.profile-input-field,
+.profile-select-field {
+  width: 100% !important;
+  padding: 12px 15px !important;
+  border: 1px solid #ddd !important;
+  border-radius: 5px !important;
+  font-size: 1rem !important;
+  font-family: inherit !important;
+  transition: border-color 0.3s ease !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #333333 !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+.profile-select-field {
+  cursor: pointer !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  background-size: 20px !important;
+  padding-right: 35px !important;
+}
+
+.profile-input-field::placeholder {
+  color: #999 !important;
+}
+
+.profile-input-field:focus,
+.profile-select-field:focus {
+  outline: none !important;
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
 .profile-greeting {
   text-align: center;
   font-size: 1.5rem;
@@ -603,16 +705,46 @@
   font-size: 0.95rem;
 }
 
-.profile-form-group input {
+.profile-form-group .error-message {
+  color: #d32f2f;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.profile-form-group input,
+.profile-form-group select {
   padding: 12px 15px;
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 1rem;
   font-family: inherit;
   transition: border-color 0.3s ease;
+  background: white !important;
+  color: #333 !important;
 }
 
-.profile-form-group input:focus {
+.profile-form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+  padding-right: 35px;
+}
+
+.profile-form-group select option {
+  color: #333 !important;
+  background: white !important;
+}
+
+.profile-form-group input::placeholder {
+  color: #999;
+}
+
+.profile-form-group input:focus,
+.profile-form-group select:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
