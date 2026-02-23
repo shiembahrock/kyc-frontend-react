@@ -89,6 +89,18 @@ const Navbar = () => {
       setUserInfo(JSON.parse(storedUserInfo));
     }
     
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      const updatedUserInfo = localStorage.getItem('_userLoggedInInfo');
+      if (updatedUserInfo) {
+        setUserInfo(JSON.parse(updatedUserInfo));
+      } else {
+        setUserInfo(null);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
     // Fetch countries
     const fetchCountries = async () => {
       try {
@@ -102,6 +114,8 @@ const Navbar = () => {
       }
     };
     fetchCountries();
+    
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   useEffect(() => {

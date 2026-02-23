@@ -1,12 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { AuthValidationByTokenAndGuestAccountID } from '../utils/auth';
 import '../styles/PaymentSuccess.css';
 
 function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const orderCode = searchParams.get('ordercode');
+  const hasValidated = useRef(false);
+
+  useEffect(() => {
+    if (hasValidated.current) return;
+    
+    const validateAuth = async () => {
+      const userInfo = localStorage.getItem('_userLoggedInInfo');
+      if (userInfo) {
+        const parsed = JSON.parse(userInfo);
+        if (parsed.guest_account_id && parsed.token) {
+          hasValidated.current = true;
+          await AuthValidationByTokenAndGuestAccountID(parsed.token, parsed.guest_account_id);
+          window.dispatchEvent(new Event('storage'));
+        }
+      }
+    };
+    validateAuth();
+  }, []);
 
   return (
     <>

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { API_BASE_URL } from '../config';
+import { AuthValidationByTokenAndGuestAccountID } from '../utils/auth';
 import '../styles/CompleteOrder.css';
 
 const CompleteOrder = () => {
@@ -22,6 +23,7 @@ const CompleteOrder = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const hasValidated = useRef(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,6 +58,23 @@ const CompleteOrder = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  useEffect(() => {
+    if (hasValidated.current) return;
+    
+    const validateAuth = async () => {
+      const userInfo = localStorage.getItem('_userLoggedInInfo');
+      if (userInfo) {
+        const parsed = JSON.parse(userInfo);
+        if (parsed.guest_account_id && parsed.token) {
+          hasValidated.current = true;
+          await AuthValidationByTokenAndGuestAccountID(parsed.token, parsed.guest_account_id);
+          window.dispatchEvent(new Event('storage'));
+        }
+      }
+    };
+    validateAuth();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
