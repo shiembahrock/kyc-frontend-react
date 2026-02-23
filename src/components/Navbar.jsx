@@ -223,7 +223,7 @@ const Navbar = () => {
     setUserInfo(null);
     setShowUserModal(false);
     setShowLogoutModal(false);
-    navigate('/');
+    window.location.reload();
   };
 
   const cancelLogout = () => {

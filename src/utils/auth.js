@@ -23,11 +23,13 @@ export const AuthValidationByTokenAndGuestAccountID = async (token, guestAccount
       return true;
     } else {
       localStorage.removeItem('_userLoggedInInfo');
+      window.location.reload();
       return false;
     }
   } catch (error) {
     console.error('Error validating auth:', error);
     localStorage.removeItem('_userLoggedInInfo');
+    window.location.reload();
     return false;
   }
 };
