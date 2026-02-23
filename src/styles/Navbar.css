@@ -23,7 +23,7 @@
 }
 
 .navbar-logo img {
-  height: 40px;
+  height: 30px;
   width: auto;
   object-fit: contain;
 }
@@ -104,6 +104,20 @@
 
   .navbar-menu li a {
     font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 900px) {
+  .navbar-container {
+    padding: 0 10px;
+  }
+
+  .navbar-menu {
+    gap: 12px;
+  }
+
+  .navbar-menu li a {
+    font-size: 0.75rem;
   }
 }
 

@@ -21,6 +21,7 @@ const CompleteOrder = () => {
   const [errors, setErrors] = useState({});
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -77,6 +78,23 @@ const CompleteOrder = () => {
         }
         const countriesData = await countriesResponse.json();
         setCountries(countriesData);
+        
+        // Auto-fill form from localStorage if user is logged in
+        const userInfo = localStorage.getItem('_userLoggedInInfo');
+        if (userInfo) {
+          const parsedUserInfo = JSON.parse(userInfo);
+          if (parsedUserInfo.guest_account) {
+            setIsLoggedIn(true);
+            setFormData(prev => ({
+              ...prev,
+              email: parsedUserInfo.email || prev.email,
+              firstName: parsedUserInfo.guest_account.first_name || prev.firstName,
+              lastName: parsedUserInfo.guest_account.last_name || prev.lastName,
+              companyName: parsedUserInfo.guest_account.company_name || prev.companyName,
+              country: parsedUserInfo.guest_account.country_id || prev.country
+            }));
+          }
+        }
         
         setError(null);
       } catch (err) {
@@ -221,6 +239,7 @@ const CompleteOrder = () => {
               onChange={handleChange}
               placeholder="your@email.com"
               className={errors.email ? 'input-error' : ''}
+              readOnly={isLoggedIn}
             />
             {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
