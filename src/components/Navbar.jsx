@@ -4,11 +4,11 @@ import { useToast } from '../context/ToastContext';
 import { API_BASE_URL } from '../config';
 import '../styles/Navbar.css';
 
-const Navbar = () => {
+const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: externalSetShowLoginModal }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [navbarHeight, setNavbarHeight] = useState(0);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(externalShowLoginModal || false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -74,6 +74,18 @@ const Navbar = () => {
   const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (externalShowLoginModal !== undefined) {
+      setShowLoginModal(externalShowLoginModal);
+    }
+  }, [externalShowLoginModal]);
+
+  useEffect(() => {
+    if (externalSetShowLoginModal) {
+      externalSetShowLoginModal(showLoginModal);
+    }
+  }, [showLoginModal, externalSetShowLoginModal]);
 
   useEffect(() => {
     const navbar = document.querySelector('.navbar');
