@@ -18,9 +18,13 @@ function SearchService() {
   const [thankYouData, setThankYouData] = useState(null);
   const [formFields, setFormFields] = useState([]);
   const [assessmentId, setAssessmentId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [loadingText, setLoadingText] = useState('Loading...');
 
   const getQuestion = async (assessmentId) => {
     try {
+      setLoadingText('Loading questions...');
+      setIsProcessing(true);
       setAssessmentId(assessmentId);
       const response = await fetch(`${API_BASE_URL}/muinmos/question/${assessmentId}`, {
         method: 'GET'
@@ -38,6 +42,8 @@ function SearchService() {
     } catch (error) {
       console.error('Error fetching questions:', error);
       showToast('Error loading questions', 'error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -86,9 +92,11 @@ function SearchService() {
 
   const SubmitMuinmosAnswer = async (answer) => {
     try {
+      setLoadingText('Submitting your answers...');
+      setIsProcessing(true);
       const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
       
-      const response = await fetch(`${API_BASE_URL}/muinmos/submit-muinmos-answer`, {
+      const response = await fetch(`${API_BASE_URL}/muinmos/submit-answer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,6 +125,8 @@ function SearchService() {
     } catch (error) {
       console.error('Error submitting answer:', error);
       showToast('Error submitting answer', 'error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -151,6 +161,8 @@ function SearchService() {
 
   const GetServiceInfoByOrderCode = async (orderCode) => {
     try {
+      setLoadingText('Loading service information...');
+      setIsProcessing(true);
       const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
       
       const resInfo = await fetch(`${API_BASE_URL}/service-info/${orderCode}`, {
@@ -238,6 +250,8 @@ function SearchService() {
     } catch (error) {
       console.error('Error fetching service info:', error);
       showToast('There was an error, please contact Administrator.', 'error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -326,6 +340,15 @@ function SearchService() {
           )}
         </div>
       </div>
+
+      {isProcessing && (
+        <div className="modal-overlay loading-overlay">
+          <div className="loading-modal">
+            <div className="spinner"></div>
+            <h2>{loadingText}</h2>
+          </div>
+        </div>
+      )}
     </>
   );
 }
