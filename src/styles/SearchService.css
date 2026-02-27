@@ -16,7 +16,7 @@
 }
 
 .back-button {
-  background: none;
+  background: transparent;
   border: none;
   color: #667eea;
   cursor: pointer;
@@ -24,13 +24,15 @@
   font-weight: 600;
   padding: 8px 0;
   margin-bottom: 20px;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, transform 0.3s ease;
   display: flex;
   align-items: center;
   gap: 5px;
+  text-decoration: none;
 }
 
 .back-button:hover {
+  background: transparent;
   color: #764ba2;
   transform: translateX(-5px);
 }
