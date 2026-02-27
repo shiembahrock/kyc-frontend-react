@@ -5,6 +5,7 @@ import { SessionExpiryProvider } from './context/SessionExpiryContext'
 import Home from './pages/Home'
 import CompleteOrder from './pages/CompleteOrder'
 import PaymentSuccess from './pages/PaymentSuccess'
+import SearchService from './pages/SearchService'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/complete-order/:serviceId" element={<CompleteOrder />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/Search-Service" element={<SearchService />} />
             </Routes>
           </div>
         </Router>

@@ -49,10 +49,10 @@ function PaymentSuccess() {
       <Navbar showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} />
       <div className="complete-order-page">        
         <div className="complete-order-container">
+          <button className="back-button" onClick={() => navigate('/')}>
+            ← Home
+          </button>
           <div className="order-header">
-            <button className="back-button" onClick={() => navigate('/')}>
-              ← Home
-            </button>
             <div className="success-icon">✓</div>
             <h1>Thank You!</h1>
             <div className="success-message">
