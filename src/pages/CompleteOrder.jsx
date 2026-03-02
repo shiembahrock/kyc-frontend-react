@@ -87,7 +87,6 @@ const CompleteOrder = () => {
           throw new Error(`Failed to fetch service data: ${serviceResponse.status}`);
         }
         const service = await serviceResponse.json();
-        console.log('Service data:', service); // Debug log to see all available fields
         setServiceData(service);
 
         // Fetch countries
