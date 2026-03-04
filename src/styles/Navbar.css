@@ -396,22 +396,24 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  background: none;
+  background: transparent;
   border: none;
-  font-size: 2.5rem;
-  color: #666;
+  color: #667eea;
   cursor: pointer;
-  width: 45px;
-  height: 45px;
+  font-size: 2rem;
+  font-weight: 600;
+  padding: 8px 0;
+  transition: color 0.3s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
   z-index: 10;
-  transition: color 0.3s ease;
 }
 
 .modal-close-button:hover {
-  color: #333;
+  background: transparent;
+  color: #764ba2;
 }
 
 .user-modal-content {
