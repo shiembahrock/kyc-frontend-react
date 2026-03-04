@@ -971,7 +971,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                             )}
                           </div>
                         </div>
-                        <div className="upload-section">
+                        <div className="upload-section" hidden>
                           <input 
                             type="file" 
                             id="profileImage" 
