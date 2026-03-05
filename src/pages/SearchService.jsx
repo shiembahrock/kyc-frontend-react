@@ -20,6 +20,8 @@ function SearchService() {
   const [assessmentId, setAssessmentId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
+  const [showStartSearch, setShowStartSearch] = useState(false);
+  const [serviceInfoData, setServiceInfoData] = useState(null);
 
   const getQuestion = async (assessmentId) => {
     try {
@@ -107,16 +109,35 @@ function SearchService() {
       });
 
       const data = await response.json();
-
+      
       if (response.ok) {
         userInfo.expiry_on = data.token_expiry_on;
         localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
         
         if (!data.body.result || data.body.result.length === 0 || (typeof data.body.result === 'string' && data.body.result.toLowerCase() === 'completed')) {
+          if (serviceInfoData) {
+            const dataAssessmentsLength = serviceInfoData.order_code_info.order_assessments.length;
+            const searchRemaining = serviceInfoData.order_code_info.search_number - dataAssessmentsLength;
+            setThankYouData({
+              searchRemaining,
+              searchNumber: serviceInfoData.order_code_info.search_number,
+              isSearchByCredit: serviceInfoData.order_code_info.is_search_by_credit
+            });
+          }
           setShowThankYou(true);
         } else if (Array.isArray(data.body.result)) {
-          generateFormFields(data.body.result);
+          //generateFormFields(data.body.result);
+          getQuestion(answer.assessment_id);
         } else {
+          if (serviceInfoData) {
+            const dataAssessmentsLength = serviceInfoData.order_code_info.order_assessments.length;
+            const searchRemaining = serviceInfoData.order_code_info.search_number - dataAssessmentsLength;
+            setThankYouData({
+              searchRemaining,
+              searchNumber: serviceInfoData.order_code_info.search_number,
+              isSearchByCredit: serviceInfoData.order_code_info.is_search_by_credit
+            });
+          }
           setShowThankYou(true);
         }
       } else {
@@ -159,6 +180,40 @@ function SearchService() {
     ));
   };
 
+  const create_muinmos_assessment_by_guest_account = async () => {
+    try {
+      setLoadingText('Creating new assessment...');
+      setIsProcessing(true);
+      const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
+      
+      const response = await fetch(`${API_BASE_URL}/muinmos/create-assessment-by-guest-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'GuestAccountId': userInfo.guest_account_id,
+          'GuestLoginToken': userInfo.token
+        },
+        body: JSON.stringify({ order_code: orderCode })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        userInfo.expiry_on = data.token_expiry_on;
+        localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
+        setShowStartSearch(false);
+        GetServiceInfoByOrderCode(orderCode);
+      } else {
+        showToast('Failed to create new assessment, please contact the Administrator', 'error');
+      }
+    } catch (error) {
+      console.error('Error creating assessment:', error);
+      showToast('Failed to create new assessment, please contact the Administrator', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const GetServiceInfoByOrderCode = async (orderCode) => {
     try {
       setLoadingText('Loading service information...');
@@ -174,6 +229,7 @@ function SearchService() {
       });
 
       const serviceInfoByOrderCode = await resInfo.json();
+      setServiceInfoData(serviceInfoByOrderCode);
 
       if (!resInfo.ok) {
         if (resInfo.status === 401) {
@@ -222,6 +278,7 @@ function SearchService() {
             
             if (dataAssessmentsLength <= 0) {
               // divSearchButton.style.display = "block" - ignore for now
+              setShowStartSearch(true);
             } else {
               if (serviceInfoByOrderCode.order_code_info.search_number >= dataAssessmentsLength) {
                 if (!serviceInfoByOrderCode.order_code_info.order_assessments[dataAssessmentsLength - 1].is_complete) {
@@ -229,6 +286,7 @@ function SearchService() {
                 } else {
                   if (serviceInfoByOrderCode.order_code_info.search_number > dataAssessmentsLength) {
                     // divSearchButton.style.display = "block" - ignore for now
+                    setShowStartSearch(true);
                   } else {
                     const searchRemaining = serviceInfoByOrderCode.order_code_info.search_number - dataAssessmentsLength;
                     setThankYouData({
@@ -314,6 +372,9 @@ function SearchService() {
                 <div className="search-remaining-display">
                   <strong>Search Remaining:</strong> {searchRemaining}
                 </div>
+              )}
+              {showStartSearch && (
+                <button className="start-search-btn" onClick={create_muinmos_assessment_by_guest_account}>Start Search</button>
               )}
               {formFields.length > 0 && (
                 <form className="dynamic-form" onSubmit={handleSubmit}>

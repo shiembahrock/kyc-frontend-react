@@ -169,7 +169,7 @@ const Pricing = () => {
               <button 
                 className="pricing-button"
                 onClick={() => navigate(`/complete-order/${plan.id}`)}
-                disabled={plan.sortOrder !== 1}
+                disabled={plan.sortOrder === 3} // Disable Enterprise plan button
               >
                 ORDER NOW
               </button>
