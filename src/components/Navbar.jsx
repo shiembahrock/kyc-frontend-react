@@ -1318,7 +1318,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                                     <td>{history.first_name}</td>
                                     <td>{history.middle_name}</td>
                                     <td>{history.last_name}</td>
-                                    <td>{new Date(history.dob).toLocaleDateString()}</td>
+                                    <td>{history.dob ? new Date(history.dob).toLocaleDateString() : ''}</td>
                                     <td>{history.rag_result}</td>
                                     <td>
                                       {history.pdf_sent ? (
