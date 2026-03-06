@@ -150,10 +150,11 @@ const Pricing = () => {
           {plans.map((plan, index) => (
             <div 
               key={plan.id} 
-              className={`pricing-card fade-in-up ${plan.popular ? 'popular' : ''}`}
+              className={`pricing-card fade-in-up ${plan.popular ? 'popular' : ''} ${index === plans.length - 1 ? 'coming-soon' : ''}`}
               ref={(el) => (cardRefs.current[index] = el)}
             >
               {plan.popular && <div className="badge">Most Popular</div>}
+              {index === plans.length - 1 && <div className="coming-soon-overlay"><span>Coming Soon</span></div>}
               <h3>{plan.name}</h3>
               <div className="price">
                 <span className="amount">{plan.price}</span>

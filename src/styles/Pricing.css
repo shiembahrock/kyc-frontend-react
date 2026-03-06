@@ -32,6 +32,8 @@
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .pricing-card.popular {
@@ -86,6 +88,7 @@
   text-align: left;
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
+  flex-grow: 1;
 }
 
 .features li {
@@ -130,6 +133,31 @@
 
 .pricing-card.popular .pricing-button {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.pricing-card.coming-soon {
+  position: relative;
+}
+
+.coming-soon-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  z-index: 10;
+}
+
+.coming-soon-overlay span {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #667eea;
+  text-transform: uppercase;
 }
 
 @media (max-width: 768px) {
