@@ -866,7 +866,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
       </div>
 
       {showLoginModal && (
-        <div className="login-modal-overlay" onClick={handleCloseModal}>
+        <div className="login-modal-overlay">
           <button className="close-button" onClick={handleCloseModal}>×</button>
           <div className="login-modal" onClick={(e) => e.stopPropagation()}>
             <h2>Please enter your email</h2>
@@ -894,7 +894,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
       )}
 
       {showOtpModal && (
-        <div className="login-modal-overlay" onClick={handleCloseModal}>
+        <div className="login-modal-overlay">
           <button className="close-button" onClick={handleCloseModal}>×</button>
           <div className="login-modal" onClick={(e) => e.stopPropagation()}>
             <h2>Please enter your code</h2>
