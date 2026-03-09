@@ -178,6 +178,29 @@
   }
 }
 
+@media (max-width: 320px) {
+  .pricing {
+    padding: 60px 10px;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .pricing-card {
+    padding: 30px 15px;
+  }
+
+  .pricing h2 {
+    font-size: 1.75rem;
+  }
+
+  .amount {
+    font-size: 2rem;
+  }
+}
+
 /* Scroll Animations */
 .bounce-in {
   opacity: 0;
