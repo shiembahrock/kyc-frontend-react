@@ -794,7 +794,6 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
       });
 
       const data = await response.json();
-      console.log('Response:', data);
 
       if (data.message === 'success') {
         userInfo.guest_account = {
