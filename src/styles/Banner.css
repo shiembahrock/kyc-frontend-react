@@ -28,7 +28,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  animation: zoomInOut 20s ease-in-out infinite;
+  animation: zoomInOut 30s ease-in-out infinite;
   z-index: 0;
 }
 

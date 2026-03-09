@@ -71,6 +71,8 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
     is_desc: true
   });
   const [isLoadingSearchHistories, setIsLoadingSearchHistories] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [loadingText, setLoadingText] = useState('');
   const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -567,7 +569,10 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
       [setting]: newValue
     }));
 
+    setLoadingText('Save processing...');
+    setIsProcessing(true);
     const success = await update_guest_account_notification_settings(setting, newValue);
+    setIsProcessing(false);
     
     // Revert if failed
     if (!success) {
@@ -765,6 +770,8 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
     }
 
     try {
+      setLoadingText('Save processing...');
+      setIsProcessing(true);
       const payload = {
         guest_account_id: userInfo.guest_account_id,
         first_name: profileData.firstName,
@@ -803,6 +810,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
         };
         userInfo.expiry_on = data.token_expiry_on;
         localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
+        window.dispatchEvent(new Event('storage'));
         showToast('Profile saved successfully!', 'success');
       } else if (data.message === 'failed' || data.message === 'timeout') {
         userInfo.expiry_on = data.token_expiry_on;
@@ -810,6 +818,8 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
       }
     } catch (error) {
       console.error('Error updating profile:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -1384,6 +1394,15 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
               <button className="cancel-btn" onClick={cancelLogout}>Cancel</button>
               <button className="confirm-btn" onClick={confirmLogout}>Logout</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isProcessing && (
+        <div className="modal-overlay loading-overlay">
+          <div className="loading-modal">
+            <div className="spinner"></div>
+            <h2>{loadingText}</h2>
           </div>
         </div>
       )}

@@ -32,24 +32,53 @@ const ContactUs = () => {
     phone: '',
     message: ''
   });
+  const [isReadOnly, setIsReadOnly] = useState({
+    name: false,
+    email: false,
+    phone: false
+  });
   const [phoneError, setPhoneError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const userInfo = localStorage.getItem('_userLoggedInInfo');
-    if (userInfo) {
-      try {
-        const parsedInfo = JSON.parse(userInfo);
-        if (parsedInfo.email) {
-          setFormData(prev => ({
-            ...prev,
-            email: parsedInfo.email
-          }));
+    const updateFormData = () => {
+      const userInfo = localStorage.getItem('_userLoggedInInfo');
+      if (userInfo) {
+        try {
+          const parsedInfo = JSON.parse(userInfo);
+          const newFormData = { name: '', email: '', phone: '', message: '' };
+          const newReadOnly = { name: false, email: false, phone: false };
+          
+          if (parsedInfo.email) {
+            newFormData.email = parsedInfo.email;
+            newReadOnly.email = true;
+          }
+          
+          if (parsedInfo.guest_account) {
+            const { first_name, last_name, phone } = parsedInfo.guest_account;
+            
+            if (first_name && last_name) {
+              newFormData.name = `${first_name} ${last_name}`;
+              newReadOnly.name = true;
+            }
+            
+            if (phone) {
+              newFormData.phone = phone;
+              newReadOnly.phone = true;
+            }
+          }
+          
+          setFormData(prev => ({ ...prev, ...newFormData }));
+          setIsReadOnly(newReadOnly);
+        } catch (error) {
+          console.error('Error parsing user info:', error);
         }
-      } catch (error) {
-        console.error('Error parsing user info:', error);
       }
-    }
+    };
+
+    updateFormData();
+    window.addEventListener('storage', updateFormData);
+    return () => window.removeEventListener('storage', updateFormData);
   }, []);
 
   const handleChange = (e) => {
@@ -145,6 +174,7 @@ const ContactUs = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                readOnly={isReadOnly.name}
                 required
               />
             </div>
@@ -156,6 +186,7 @@ const ContactUs = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                readOnly={isReadOnly.email}
                 required
               />
             </div>
@@ -169,6 +200,7 @@ const ContactUs = () => {
                 onChange={handleChange}
                 placeholder="+1234567890"
                 className={phoneError ? 'error' : ''}
+                readOnly={isReadOnly.phone}
                 required
               />
               {phoneError && <span className="error-message">{phoneError}</span>}
