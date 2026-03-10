@@ -162,13 +162,6 @@ const CompleteOrder = () => {
       const currencyId = serviceData?.currency || '';
       const currencyCode = serviceData?.currency_code || '';
 
-      console.log('Checkout data:', {
-        currencyId,
-        currencyCode,
-        priceValue,
-        serviceData
-      }); // Debug log
-
       const res = await fetch(`${API_BASE_URL}/checkout/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
