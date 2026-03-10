@@ -1205,6 +1205,9 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                                       <td>{order.payment_status}</td>
                                       <td>
                                         <div className="action-buttons">
+                                          {order.checkout_session_status === 'expired' && (
+                                            <span style={{ color: '#d32f2f', fontWeight: 'bold', cursor: 'default' }}>Expired!</span>
+                                          )}
                                           {order.usage_status === 0 && (order.payment_status === 'unpaid' || order.payment_status === '') && isNotExpired && order.checkout_url && (
                                             <a href={order.checkout_url} target="_blank" rel="noopener noreferrer" className="action-btn">
                                               💳
