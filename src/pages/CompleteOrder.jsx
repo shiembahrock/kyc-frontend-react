@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { API_BASE_URL } from '../config';
 import { AuthValidationByTokenAndGuestAccountID } from '../utils/auth';
 import '../styles/CompleteOrder.css';
@@ -355,6 +356,7 @@ const CompleteOrder = () => {
         )}
         </div>
       </div>
+      <Footer />
     </>
   );
 };

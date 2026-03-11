@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { useToast } from '../context/ToastContext';
 import { AuthValidationByTokenAndGuestAccountID } from '../utils/auth';
 import { API_BASE_URL } from '../config';
@@ -410,6 +411,7 @@ function SearchService() {
           </div>
         </div>
       )}
+      <Footer />
     </>
   );
 }
