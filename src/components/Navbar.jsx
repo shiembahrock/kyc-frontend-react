@@ -1245,14 +1245,16 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                             <button 
                               onClick={() => handlePageChange(1)} 
                               disabled={ordersPagination.page_number === 1}
+                              title="First page"
                             >
-                              First
+                              ⏮
                             </button>
                             <button 
                               onClick={() => handlePageChange(ordersPagination.page_number - 1)} 
                               disabled={ordersPagination.page_number === 1}
+                              title="Previous page"
                             >
-                              Previous
+                              ◀
                             </button>
                             <span className="page-indicator">
                               Page {ordersPagination.page_number} of {getTotalPages()}
@@ -1260,14 +1262,16 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                             <button 
                               onClick={() => handlePageChange(ordersPagination.page_number + 1)} 
                               disabled={ordersPagination.page_number >= getTotalPages()}
+                              title="Next page"
                             >
-                              Next
+                              ▶
                             </button>
                             <button 
                               onClick={() => handlePageChange(getTotalPages())} 
                               disabled={ordersPagination.page_number >= getTotalPages()}
+                              title="Last page"
                             >
-                              Last
+                              ⏭
                             </button>
                           </div>
                         </>
@@ -1351,14 +1355,16 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                             <button 
                               onClick={() => handleSearchHistoriesPageChange(1)} 
                               disabled={searchHistoriesPagination.page_number === 1}
+                              title="First page"
                             >
-                              First
+                              ⏮
                             </button>
                             <button 
                               onClick={() => handleSearchHistoriesPageChange(searchHistoriesPagination.page_number - 1)} 
                               disabled={searchHistoriesPagination.page_number === 1}
+                              title="Previous page"
                             >
-                              Previous
+                              ◀
                             </button>
                             <span className="page-indicator">
                               Page {searchHistoriesPagination.page_number} of {getSearchHistoriesTotalPages()}
@@ -1366,14 +1372,16 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                             <button 
                               onClick={() => handleSearchHistoriesPageChange(searchHistoriesPagination.page_number + 1)} 
                               disabled={searchHistoriesPagination.page_number >= getSearchHistoriesTotalPages()}
+                              title="Next page"
                             >
-                              Next
+                              ▶
                             </button>
                             <button 
                               onClick={() => handleSearchHistoriesPageChange(getSearchHistoriesTotalPages())} 
                               disabled={searchHistoriesPagination.page_number >= getSearchHistoriesTotalPages()}
+                              title="Last page"
                             >
-                              Last
+                              ⏭
                             </button>
                           </div>
                         </>

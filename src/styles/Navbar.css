@@ -1000,11 +1000,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .pagination-buttons button {
-  padding: 8px 16px;
+  width: auto;
+  padding: 8px 10px;
   background: white;
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -1012,7 +1013,8 @@
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  min-width: fit-content;
 }
 
 .pagination-buttons button:hover:not(:disabled) {
@@ -1037,16 +1039,18 @@
   .pagination-buttons {
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap;
   }
 
   .pagination-buttons button {
-    flex: 1;
-    min-width: 70px;
+    width: auto;
+    min-width: auto;
   }
 
   .page-indicator {
     width: 100%;
     text-align: center;
+    order: 5;
   }
 }
 
