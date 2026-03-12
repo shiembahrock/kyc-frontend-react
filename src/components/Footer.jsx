@@ -58,9 +58,9 @@ const Footer = () => {
                 <span className="icon">📍</span>
                 16 Raffles Quay #30-01 Hong Leong Building Singapore 048581
               </a>
-              <a href="mailto:info@enigmatig.com" className="social-link">
+              <a href="mailto:regtech@enigmatig.com" className="social-link">
                 <span className="icon">✉️</span>
-                info@enigmatig.com
+                regtech@enigmatig.com
               </a>
             </div>
           </div>

@@ -149,7 +149,10 @@ const ContactUs = () => {
           <div ref={infoRef} className="contact-info fade-in-left">
             <div className="info-item">
               <h3>📍 Address</h3>
-              <p>Shenton Way, Singapore<br />#23-01 Singapore 068805</p>
+              {/* <p>Shenton Way, Singapore<br />#23-01 Singapore 068805</p> */}
+              <a href="https://maps.app.goo.gl/vW6L42WrDiUUHjAa8" target="_blank" className="social-link">                
+                16 Raffles Quay #30-01 Hong Leong Building Singapore 048581
+              </a>
             </div>
             {/* <div className="info-item">
               <h3>📞 Phone</h3>
@@ -157,7 +160,7 @@ const ContactUs = () => {
             </div> */}
             <div className="info-item">
               <h3>✉️ Email</h3>
-              <p>regtech@enigmatig.com</p>
+              <a href="mailto:regtech@enigmatig.com">regtech@enigmatig.com</a>
             </div>
             <div className="info-item">
               <h3>🕐 Hours</h3>
