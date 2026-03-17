@@ -2,7 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ScrollToTop from '../components/ScrollToTop';
 import { useToast } from '../context/ToastContext';
+import { useModal } from '../context/ModalContext';
 import { AuthValidationByTokenAndGuestAccountID } from '../utils/auth';
 import { API_BASE_URL } from '../config';
 import '../styles/SearchService.css';
@@ -13,6 +15,7 @@ function SearchService() {
   const orderCode = searchParams.get('ordercode');
   const hasValidated = useRef(false);
   const { showToast } = useToast();
+  const { setIsModalOpen } = useModal();
   const [serviceName, setServiceName] = useState('');
   const [searchRemaining, setSearchRemaining] = useState('');
   const [showThankYou, setShowThankYou] = useState(false);
@@ -126,6 +129,7 @@ function SearchService() {
             });
           }
           setShowThankYou(true);
+          setIsModalOpen(true);
         } else if (Array.isArray(data.body.result)) {
           //generateFormFields(data.body.result);
           getQuestion(answer.assessment_id);
@@ -140,6 +144,7 @@ function SearchService() {
             });
           }
           setShowThankYou(true);
+          setIsModalOpen(true);
         }
       } else {
         showToast(data.body.error, 'error');
@@ -179,6 +184,11 @@ function SearchService() {
     setFormFields(prev => prev.map(field => 
       field.questionId === questionId ? { ...field, value } : field
     ));
+  };
+
+  const handleCloseThankyou = () => {
+    setShowThankYou(false);
+    setIsModalOpen(false);
   };
 
   const create_muinmos_assessment_by_guest_account = async () => {
@@ -266,6 +276,7 @@ function SearchService() {
             isSearchByCredit: serviceInfoByOrderCode.order_code_info.is_search_by_credit
           });
           setShowThankYou(true);
+          setIsModalOpen(true);
           return false;
         } else if (serviceInfoByOrderCode.order_code_info.payment_status.trim().toLowerCase() === 'paid' && 
                    serviceInfoByOrderCode.order_code_info.checkout_session_status.trim().toLowerCase() === 'complete' && 
@@ -296,6 +307,7 @@ function SearchService() {
                       isSearchByCredit: serviceInfoByOrderCode.order_code_info.is_search_by_credit
                     });
                     setShowThankYou(true);
+                    setIsModalOpen(true);
                     return false;
                   }
                 }
@@ -352,20 +364,25 @@ function SearchService() {
           </button>
           <h1>{serviceName || 'Search Service'}</h1>
           {showThankYou ? (
-            <div className="thank-you-message">
-              <h2>🎉 Thank You!</h2>
-              <p>Your assessment has been completed successfully.</p>
-              <p>The PDF report sent to your email.</p>
-              {thankYouData && !thankYouData.isSearchByCredit && thankYouData.searchNumber > 1 && thankYouData.searchNumber > thankYouData.searchRemaining && (
-                <div className="continue-search">
-                  <p className="remaining-text">
-                    You have {thankYouData.searchRemaining > 1 ? `${thankYouData.searchRemaining} new searches` : `${thankYouData.searchRemaining} new search`} remaining.
-                  </p>
-                  <button className="continue-btn" onClick={() => window.location.href = `${window.location.origin}/Search-Service?ordercode=${orderCode}`}>
-                    Continue Search
-                  </button>
-                </div>
-              )}
+            <div className="thank-you-overlay">
+              <div className="thank-you-message">
+                <h2>🎉 Thank You!</h2>
+                <p>Your assessment has been completed successfully.</p>
+                <p>The PDF report sent to your email.</p>
+                {thankYouData && !thankYouData.isSearchByCredit && thankYouData.searchNumber > 1 && thankYouData.searchNumber > thankYouData.searchRemaining && (
+                  <div className="continue-search">
+                    <p className="remaining-text">
+                      You have {thankYouData.searchRemaining > 1 ? `${thankYouData.searchRemaining} new searches` : `${thankYouData.searchRemaining} new search`} remaining.
+                    </p>
+                    <button className="continue-btn" onClick={() => {
+                      handleCloseThankyou();
+                      window.location.href = `${window.location.origin}/Search-Service?ordercode=${orderCode}`;
+                    }}>
+                      Continue Search
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <>
@@ -412,6 +429,7 @@ function SearchService() {
         </div>
       )}
       <Footer />
+      <ScrollToTop />
     </>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import { useModal } from '../context/ModalContext';
 import { API_BASE_URL } from '../config';
 import '../styles/Navbar.css';
 
@@ -10,6 +11,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
   const [navbarHeight, setNavbarHeight] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(externalShowLoginModal || false);
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const { setIsModalOpen } = useModal();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [otp, setOtp] = useState('');
@@ -196,6 +198,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
     const userInfo = localStorage.getItem('_userLoggedInInfo');
     if (!userInfo) {
       setShowLoginModal(true);
+      setIsModalOpen(true);
     } else {
       const parsedUserInfo = JSON.parse(userInfo);
       if (parsedUserInfo.guest_account) {
@@ -220,12 +223,14 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
         });
       }
       setShowUserModal(true);
+      setIsModalOpen(true);
     }
   };
 
   const handleCloseUserModal = () => {
     setShowUserModal(false);
     setActiveMenu('Profile');
+    setIsModalOpen(false);
   };
 
   const handleLogout = () => {
@@ -353,6 +358,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
     setOtp('');
     setOtpError('');
     setCountdown(300);
+    setIsModalOpen(false);
   };
 
   const validateEmail = (email) => {
@@ -399,6 +405,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
       setShowLoginModal(false);
       setShowOtpModal(true);
       setCountdown(300);
+      setIsModalOpen(true);
     } catch (error) {
       console.error('Error:', error);
       setEmailError('Failed to send OTP. Please try again.');

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ScrollToTop from '../components/ScrollToTop';
 import { AuthValidationByTokenAndGuestAccountID } from '../utils/auth';
 import '../styles/PaymentSuccess.css';
 
@@ -74,6 +75,7 @@ function PaymentSuccess() {
         </div>
       </div>
       <Footer />
+      <ScrollToTop />
     </>
   );
 }
