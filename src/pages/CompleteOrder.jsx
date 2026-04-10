@@ -19,7 +19,8 @@ const CompleteOrder = () => {
     firstName: '',
     lastName: '',
     companyName: '',
-    country: ''
+    country: '',
+    phone: ''
   });
   const [errors, setErrors] = useState({});
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -30,6 +31,11 @@ const CompleteOrder = () => {
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone) => {
+    const phoneRegex = /^\+\d{1,3}\d{6,14}$/;
+    return phoneRegex.test(phone);
   };
 
   const validateForm = () => {
@@ -55,6 +61,12 @@ const CompleteOrder = () => {
 
     if (!formData.country) {
       newErrors.country = 'Country is required';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone is required';
+    } else if (!validatePhone(formData.phone)) {
+      newErrors.phone = 'Phone must include country code (e.g., +1234567890)';
     }
 
     setErrors(newErrors);
@@ -111,7 +123,8 @@ const CompleteOrder = () => {
               firstName: parsedUserInfo.guest_account.first_name || prev.firstName,
               lastName: parsedUserInfo.guest_account.last_name || prev.lastName,
               companyName: parsedUserInfo.guest_account.company_name || prev.companyName,
-              country: parsedUserInfo.guest_account.country_id || prev.country
+              country: parsedUserInfo.guest_account.country_id || prev.country,
+              phone: parsedUserInfo.guest_account.phone || prev.phone
             }));
           }
         }
@@ -136,6 +149,7 @@ const CompleteOrder = () => {
       ...prev,
       [name]: value
     }));
+    
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -173,6 +187,7 @@ const CompleteOrder = () => {
           last_name: formData.lastName,
           company_name: formData.companyName,
           country_id: formData.country,
+          phone: formData.phone,
           service_id: serviceId,
           price: priceValue ?? 0,
           currency_id: currencyId,
@@ -320,6 +335,20 @@ const CompleteOrder = () => {
             {errors.country && <span className="error-message">{errors.country}</span>}
           </div>
 
+          <div className="form-group">
+            <label htmlFor="phone">Phone *</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+1234567890"
+              className={errors.phone ? 'input-error' : ''}
+            />
+            {errors.phone && <span className="error-message">{errors.phone}</span>}
+          </div>
+
           <button type="submit" className="submit-btn">Complete Order</button>
         </form>
 
@@ -331,6 +360,7 @@ const CompleteOrder = () => {
                 <p><strong>Email:</strong> {formData.email}</p>
                 <p><strong>Name:</strong> {formData.firstName} {formData.lastName}</p>
                 <p><strong>Company:</strong> {formData.companyName}</p>
+                <p><strong>Phone:</strong> {formData.phone}</p>
                 {serviceData && <p><strong>Service:</strong> {serviceData.service_name}</p>}
                 {serviceData && (
                   <p><strong>Price:</strong> {serviceData.currency_code}{serviceData.currency_symbol}{parseFloat(serviceData.price).toFixed(2)}</p>
