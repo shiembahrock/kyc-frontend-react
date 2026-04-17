@@ -24,11 +24,28 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('referralCode');
+    };
+  }, []);
+
+  useEffect(() => {
     fetch(`${API_BASE_URL}/countries`)
       .then(r => r.ok ? r.json() : [])
       .then(setCountries)
       .catch(() => {});
-  }, []);
+    
+    const refParam = searchParams.get('ref');
+    if (refParam) {
+      sessionStorage.setItem('referralCode', refParam);
+      window.history.replaceState({}, document.title, '/register/');
+    } else {
+      const storedRef = sessionStorage.getItem('referralCode');
+      if (storedRef) {
+        setFormData(prev => ({ ...prev, referralCode: storedRef }));
+      }
+    }
+  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,6 +83,7 @@ const Register = () => {
       });
       const data = await response.json();
       if (response.ok && data.message === 'success') {
+        sessionStorage.removeItem('referralCode');
         showToast('Account created! Please sign in.', 'success');
         navigate('/');
       } else {
@@ -130,7 +148,7 @@ const Register = () => {
           <div className="register-form-group">
             <label>
               Referral Code{' '}
-              {refFromUrl
+              {formData.referralCode
                 ? <span className="referral-applied-label">🎁 Applied from a shared link</span>
                 : <span className="optional-label">(Optional)</span>
               }
@@ -141,8 +159,8 @@ const Register = () => {
               value={formData.referralCode}
               onChange={handleChange}
               placeholder="Enter referral code if you have one"
-              readOnly={!!refFromUrl}
-              className={`${refFromUrl ? 'input-readonly' : ''} ${errors.referralCode ? 'input-error' : ''}`.trim()}
+              readOnly={!!formData.referralCode}
+              className={`${formData.referralCode ? 'input-readonly' : ''} ${errors.referralCode ? 'input-error' : ''}`.trim()}
             />
             {errors.referralCode && <span className="error-message">{errors.referralCode}</span>}
           </div>
