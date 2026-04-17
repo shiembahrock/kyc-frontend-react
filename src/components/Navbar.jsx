@@ -836,16 +836,39 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
 
   
 
+  const validateInviteEmails = (emailsString) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emails = emailsString.split(',').map(email => email.trim()).filter(email => email);
+    
+    if (emails.length === 0) {
+      return { valid: false, error: 'Email is required' };
+    }
+    
+    const invalidEmails = emails.filter(email => !emailRegex.test(email));
+    if (invalidEmails.length > 0) {
+      return { valid: false, error: `Invalid email format: ${invalidEmails.join(', ')}` };
+    }
+    
+    return { valid: true, error: '' };
+  };
+
   const handleInviteNow = async () => {
-    const emails = inviteEmails.trim();
-    if (!emails) { setInviteError('Email is required'); return; }
+    const emailsString = inviteEmails.trim();
+    const validation = validateInviteEmails(emailsString);
+    
+    if (!validation.valid) {
+      setInviteError(validation.error);
+      return;
+    }
+    
     try {
       setIsInviting(true);
+      const emailsArray = emailsString.split(',').map(email => email.trim());
       const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
       const response = await fetch(`${API_BASE_URL}/guest-account/invite-friends`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'GuestAccountToken': userInfo.token },
-        body: JSON.stringify({ guest_account_id: userInfo.guest_account_id, emails })
+        body: JSON.stringify({ guest_account_id: userInfo.guest_account_id, emails: emailsArray, redirected_link: window.location.origin + '/register' })
       });
       const data = await response.json();
       if (response.ok && data.message === 'success') {
@@ -1725,7 +1748,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
       )}
 
       {showInviteModal && (
-        <div className="login-modal-overlay" onClick={() => setShowInviteModal(false)}>
+        <div className="login-modal-overlay">
           <div className="login-modal" onClick={(e) => e.stopPropagation()}>
             <button className="close-button" onClick={() => setShowInviteModal(false)}>×</button>
             <h2>Invite Friends</h2>
