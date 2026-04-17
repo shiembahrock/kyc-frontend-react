@@ -258,7 +258,7 @@ const CompleteOrder = () => {
 
         <form className="order-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email *</label>
+            <label htmlFor="email">Email <span className="required-asterisk">*</span></label>
             <input
               type="email"
               id="email"
@@ -274,7 +274,7 @@ const CompleteOrder = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="firstName">First Name *</label>
+              <label htmlFor="firstName">First Name <span className="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="firstName"
@@ -288,7 +288,7 @@ const CompleteOrder = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="lastName">Last Name *</label>
+              <label htmlFor="lastName">Last Name <span className="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="lastName"
@@ -303,7 +303,7 @@ const CompleteOrder = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="companyName">Company Name *</label>
+            <label htmlFor="companyName">Company Name <span className="required-asterisk">*</span></label>
             <input
               type="text"
               id="companyName"
@@ -317,7 +317,7 @@ const CompleteOrder = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="country">Country *</label>
+            <label htmlFor="country">Country <span className="required-asterisk">*</span></label>
             <select
               id="country"
               name="country"
@@ -336,7 +336,7 @@ const CompleteOrder = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="phone">Phone *</label>
+            <label htmlFor="phone">Phone <span className="required-asterisk">*</span></label>
             <input
               type="tel"
               id="phone"

@@ -73,6 +73,22 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
     is_desc: true
   });
   const [isLoadingSearchHistories, setIsLoadingSearchHistories] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [referredBy, setReferredBy] = useState('');
+  const [referredById, setReferredById] = useState('');
+  const [applyReferralInput, setApplyReferralInput] = useState('');
+  const [applyReferralError, setApplyReferralError] = useState('');
+  const [isApplyingReferral, setIsApplyingReferral] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmails, setInviteEmails] = useState('');
+  const [inviteError, setInviteError] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
+  const [referredUsersData, setReferredUsersData] = useState({ data_list: [], total_count: 0, current_page_number: 1, is_has_more: false });
+  const [referredUsersPagination, setReferredUsersPagination] = useState({ page_size: 5, page_number: 1, sort_by: 'created_at', is_desc: true });
+  const [isLoadingReferredUsers, setIsLoadingReferredUsers] = useState(false);
+  const [isRequestingCode, setIsRequestingCode] = useState(false);
+  const [isLoadingReferralCode, setIsLoadingReferralCode] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingText, setLoadingText] = useState('');
   const { showToast } = useToast();
@@ -252,6 +268,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
   const userMenuItems = [
     { name: 'Profile', icon: '👤' },
     { name: 'Notifications', icon: '🔔' },
+    { name: 'Referrals', icon: '🎁' },
     { name: 'Orders', icon: '📦' },
     { name: 'Search Histories', icon: '🔍' },
     { name: 'Logout', icon: '🚪' }
@@ -266,6 +283,9 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
         ordersPagination.is_desc
       );
     }
+  }, [activeMenu, showUserModal, ordersPagination]);
+
+  useEffect(() => {
     if (activeMenu === 'Search Histories' && showUserModal) {
       get_search_histories_by_guest_account_id(
         searchHistoriesPagination.page_size,
@@ -274,7 +294,24 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
         searchHistoriesPagination.is_desc
       );
     }
-  }, [activeMenu, showUserModal, ordersPagination, searchHistoriesPagination]);
+  }, [activeMenu, showUserModal, searchHistoriesPagination]);
+
+  useEffect(() => {
+    if (activeMenu === 'Referrals' && showUserModal) {
+      get_referral_code();
+    }
+  }, [activeMenu, showUserModal]);
+
+  useEffect(() => {
+    if (activeMenu === 'Referrals' && showUserModal) {
+      get_referred_users(
+        referredUsersPagination.page_size,
+        referredUsersPagination.page_number,
+        referredUsersPagination.sort_by,
+        referredUsersPagination.is_desc
+      );
+    }
+  }, [activeMenu, showUserModal, referredUsersPagination]);
 
   const handlePageSizeChange = (e) => {
     setOrdersPagination(prev => ({
@@ -383,7 +420,8 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
     
     try {
       setIsSubmitting(true);
-      const response = await fetch(`${API_BASE_URL}/auth/email-get-otp`, {
+      // const response = await fetch(`${API_BASE_URL}/auth/email-get-otp`, {
+      const response = await fetch(`${API_BASE_URL}/auth/registered-email-get-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -394,11 +432,16 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send OTP');
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 404 && data.message === 'email unregistered') {
+          setEmailError('This email is not registered. Please sign up first.');
+        } else {
+          setEmailError(data.message || 'Failed to send OTP. Please try again.');
+        }
+        return;
+      }
       
       sessionStorage.setItem('temp_guest_account_id', data.guest_account_id);
       
@@ -714,6 +757,167 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
     }
   };
 
+  const get_referral_code = async () => {
+    try {
+      setIsLoadingReferralCode(true);
+      const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
+      const response = await fetch(`${API_BASE_URL}/guest-account/get-referral-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'GuestAccountToken': userInfo.token },
+        body: JSON.stringify({ guest_account_id: userInfo.guest_account_id })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setReferralCode(data.referral_code || '');
+        setReferredBy(data.referred_by && data.referred_by_id ? data.referred_by : '');
+        setReferredById(data.referred_by && data.referred_by_id ? data.referred_by_id : '');
+        if (data.token_expiry_on) { userInfo.expiry_on = data.token_expiry_on; localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo)); }
+      }
+    } catch (error) { console.error('Error fetching referral code:', error); }
+    finally { setIsLoadingReferralCode(false); }
+  };
+
+  const get_referred_users = async (pageSize, pageNumber, sortBy = 'created_at', isDesc = true) => {
+    try {
+      setIsLoadingReferredUsers(true);
+      const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
+      const response = await fetch(`${API_BASE_URL}/guest-account/referred-users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'GuestAccountToken': userInfo.token },
+        body: JSON.stringify({ guest_account_id: userInfo.guest_account_id, page_size: pageSize, page_number: pageNumber, sort_by: sortBy, is_desc: isDesc })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setReferredUsersData({
+          data_list: data.data_list || [],
+          total_count: data.total_count || 0,
+          current_page_number: data.current_page_number || pageNumber,
+          is_has_more: data.is_has_more || false
+        });
+        if (data.token_expiry_on) { userInfo.expiry_on = data.token_expiry_on; localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo)); }
+      }
+    } catch (error) { console.error('Error fetching referred users:', error); }
+    finally { setIsLoadingReferredUsers(false); }
+  };
+
+  const handleReferredUsersPageSizeChange = (e) => {
+    setReferredUsersPagination(prev => ({
+      ...prev,
+      page_size: parseInt(e.target.value),
+      page_number: 1
+    }));
+  };
+
+  const handleReferredUsersPageChange = (newPage) => {
+    setReferredUsersPagination(prev => ({
+      ...prev,
+      page_number: newPage
+    }));
+  };
+
+  const handleReferredUsersSortChange = (columnName) => {
+    setReferredUsersPagination(prev => {
+      const isSameColumn = prev.sort_by === columnName;
+      return {
+        ...prev,
+        sort_by: columnName,
+        is_desc: isSameColumn ? !prev.is_desc : true,
+        page_number: 1
+      };
+    });
+  };
+
+  const getReferredUsersSortIcon = (columnName) => {
+    if (referredUsersPagination.sort_by !== columnName) {
+      return '⇅';
+    }
+    return referredUsersPagination.is_desc ? '↓' : '↑';
+  };
+
+  
+
+  const handleInviteNow = async () => {
+    const emails = inviteEmails.trim();
+    if (!emails) { setInviteError('Email is required'); return; }
+    try {
+      setIsInviting(true);
+      const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
+      const response = await fetch(`${API_BASE_URL}/guest-account/invite-friends`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'GuestAccountToken': userInfo.token },
+        body: JSON.stringify({ guest_account_id: userInfo.guest_account_id, emails })
+      });
+      const data = await response.json();
+      if (response.ok && data.message === 'success') {
+        if (data.token_expiry_on) { userInfo.expiry_on = data.token_expiry_on; localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo)); }
+        showToast('Invitations sent successfully!', 'success');
+        setShowInviteModal(false);
+        setInviteEmails('');
+      } else {
+        setInviteError(data.message || 'Failed to send invitations');
+      }
+    } catch (error) { setInviteError('Error sending invitations'); }
+    finally { setIsInviting(false); }
+  };
+
+  const getReferredUsersTotalPages = () => Math.ceil(referredUsersData.total_count / referredUsersPagination.page_size);
+
+  const handleApplyReferral = async () => {
+    const code = applyReferralInput.trim();
+    if (!code) { setApplyReferralError('Please enter a referral code'); return; }
+    try {
+      setIsApplyingReferral(true);
+      const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
+      const response = await fetch(`${API_BASE_URL}/guest-account/apply-referral-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'GuestAccountToken': userInfo.token },
+        body: JSON.stringify({ guest_account_id: userInfo.guest_account_id, referral_code: code })
+      });
+      const data = await response.json();
+      if (response.ok && data.message === 'success') {
+        if (data.token_expiry_on) { userInfo.expiry_on = data.token_expiry_on; localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo)); }
+        setReferredBy(data.referred_by || code);
+        setReferredById(data.referred_by_id || '');
+        setApplyReferralInput('');
+        showToast('Referral code applied successfully!', 'success');
+      } else {
+        // Update token expiry if backend provided it even on error
+        if (data && data.token_expiry_on) {
+          userInfo.expiry_on = data.token_expiry_on;
+          localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo));
+        }
+        // If backend returned 404 or a referral-related message, surface it on the referral input
+        if (data && data.message && (response.status === 404 || /referral/i.test(data.message))) {
+          setApplyReferralError(data.message);
+        } else {
+          setApplyReferralError(data.message || 'Invalid referral code');
+        }
+      }
+    } catch (error) { setApplyReferralError('Error applying referral code'); }
+    finally { setIsApplyingReferral(false); }
+  };
+
+  const request_referral_code = async () => {
+    try {
+      setIsRequestingCode(true);
+      const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
+      const response = await fetch(`${API_BASE_URL}/guest-account/request-referral-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'GuestAccountToken': userInfo.token },
+        body: JSON.stringify({ guest_account_id: userInfo.guest_account_id })
+      });
+      const data = await response.json();
+      if (response.ok && data.referral_code) {
+        setReferralCode(data.referral_code);
+        if (data.token_expiry_on) { userInfo.expiry_on = data.token_expiry_on; localStorage.setItem('_userLoggedInInfo', JSON.stringify(userInfo)); }
+        showToast('Referral code generated!', 'success');
+      } else {
+        showToast(data.message || 'Failed to generate referral code', 'error');
+      }
+    } catch (error) { showToast('Error requesting referral code', 'error'); }
+    finally { setIsRequestingCode(false); }
+  };
+
   const handleSaveProfile = async () => {
     const userInfo = JSON.parse(localStorage.getItem('_userLoggedInInfo'));
     
@@ -885,7 +1089,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
         <div className="login-modal-overlay">
           <button className="close-button" onClick={handleCloseModal}>×</button>
           <div className="login-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Please enter your email</h2>
+            <h2>Sign In</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <input
@@ -902,8 +1106,9 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                 {emailError && <span className="error-message">{emailError}</span>}
               </div>
               <button type="submit" className="submit-button" disabled={isSubmitting}>
-                {isSubmitting ? 'Processing...' : 'SIGN IN OR CREATE AN ACCOUNT'}
+                {isSubmitting ? 'Processing...' : 'SIGN IN'}
               </button>
+              <p className="signup-prompt">Don't have an account? <a className="resend-link" onClick={() => { handleCloseModal(); navigate('/register'); }}>Sign up</a></p>
             </form>
           </div>
         </div>
@@ -1001,7 +1206,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
 
                       <div className="profile-form-row">
                         <div className="profile-form-group">
-                          <label>First Name</label>
+                          <label>First Name <span className="required-asterisk">*</span></label>
                           <input 
                             type="text" 
                             name="firstName" 
@@ -1012,7 +1217,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                           {profileErrors.firstName && <span className="error-message">{profileErrors.firstName}</span>}
                         </div>
                         <div className="profile-form-group">
-                          <label>Last Name</label>
+                          <label>Last Name <span className="required-asterisk">*</span></label>
                           <input 
                             type="text" 
                             name="lastName" 
@@ -1026,7 +1231,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
 
                       <div className="profile-form-row">
                         <div className="profile-form-group">
-                          <label>Country</label>
+                          <label>Country <span className="required-asterisk">*</span></label>
                           <select 
                             name="country" 
                             value={profileData.country} 
@@ -1057,7 +1262,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
 
                       <div className="profile-form-row">
                         <div className="profile-form-group">
-                          <label>Company Name</label>
+                          <label>Company Name <span className="required-asterisk">*</span></label>
                           <input 
                             type="text" 
                             name="companyName" 
@@ -1153,6 +1358,123 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                           <span className="toggle-slider"></span>
                         </label>
                       </div>
+                    </div>
+                  )}
+                  {activeMenu === 'Referrals' && (
+                    <div className="referrals-content">
+                      {isLoadingReferralCode ? (
+                        <p>Loading referrals data...</p>
+                      ) : (
+                        <>
+                          <input type="hidden" value={referredById} />
+                          <div className="referral-code-section">
+                            {referredBy ? (
+                              <span>You are referred by : <strong>{referredBy}</strong></span>
+                            ) : (
+                              <>
+                                <p className="referral-title" style={{marginBottom: '4px'}}>Got a Referral Code?</p>
+                                <p className="referral-subtitle" style={{marginBottom: '12px'}}>No referral yet? Enter a referral code to get a special offer.</p>
+                                <div className="apply-referral-row">
+                                  <input
+                                    type="text"
+                                    className={`apply-referral-input${applyReferralError ? ' input-error' : ''}`}
+                                    placeholder="Enter referral code"
+                                    value={applyReferralInput}
+                                    onChange={(e) => { setApplyReferralInput(e.target.value); setApplyReferralError(''); }}
+                                  />
+                                  <button className="apply-referral-btn" onClick={handleApplyReferral} disabled={isApplyingReferral}>
+                                    {isApplyingReferral ? 'Applying...' : 'Apply Code'}
+                                  </button>
+                                </div>
+                                {applyReferralError && <span className="error-message">{applyReferralError}</span>}
+                              </>
+                            )}
+                          </div>
+                          <div className="referral-code-section">
+                            {referralCode ? (
+                              <>
+                                <p className="referral-title">Invite Friends &amp; Earn Rewards.</p>
+                                <p className="referral-subtitle" style={{marginBottom: '12px'}}>Share your referral code and enjoy special benefits when your friends join.</p>
+                                <div className="referral-code-row">
+                                  <span>Your Referral Code : <strong>{referralCode}</strong></span>
+                                  <button className={`copy-code-btn${isCopied ? ' copied' : ''}`} onClick={() => { navigator.clipboard.writeText(referralCode); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); }}>
+                                    {isCopied ? (
+                                      <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!</>
+                                    ) : (
+                                      <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</>
+                                    )}
+                                  </button>
+                                </div>
+                                <p className="referral-helper-text">Share this code with your friends to earn rewards.</p>
+                                <div className="referral-invite-section">
+                                  <button className="invite-friends-btn" onClick={() => { setShowInviteModal(true); setInviteEmails(''); setInviteError(''); }}>Invite Friends</button>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <p className="referral-title">Invite Friends &amp; Earn Rewards.</p>
+                                <p className="referral-subtitle" style={{marginBottom: '12px'}}>Share your referral code and enjoy special benefits when your friends join.</p>
+                                <button className="request-referral-btn" onClick={request_referral_code} disabled={isRequestingCode}>
+                                  {isRequestingCode ? 'Requesting...' : 'Request Your Referral Code'}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                          {referralCode && (
+                            <div className="referred-users-section">
+                            <h4>Referred Users</h4>
+                        {isLoadingReferredUsers ? (
+                          <p>Loading...</p>
+                        ) : referredUsersData.data_list.length === 0 ? (
+                          <p>No referred users yet</p>
+                        ) : (
+                          <>
+                            <div className="page-size-control">
+                              <label>Page size:
+                                <select value={referredUsersPagination.page_size} onChange={handleReferredUsersPageSizeChange}>
+                                  <option value="5">5</option>
+                                  <option value="10">10</option>
+                                  <option value="20">20</option>
+                                  <option value="50">50</option>
+                                </select>
+                              </label>
+                            </div>
+                            <div className="orders-table-container">
+                              <table className="orders-table">
+                                <thead>
+                                  <tr>
+                                    <th className="sortable-header" onClick={() => handleReferredUsersSortChange('created_at')}>
+                                      Created At {getReferredUsersSortIcon('created_at')}
+                                    </th>
+                                    <th className="sortable-header" onClick={() => handleReferredUsersSortChange('email')}>
+                                      Email {getReferredUsersSortIcon('email')}
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {referredUsersData.data_list.map((user, index) => (
+                                    <tr key={index}>
+                                      <td>{new Date(user.created_at).toLocaleString()}</td>
+                                      <td>{user.email}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                            <div className="pagination-info">Total row(s): {referredUsersData.total_count}</div>
+                            <div className="pagination-buttons">
+                              <button onClick={() => handleReferredUsersPageChange(1)} disabled={referredUsersPagination.page_number === 1} title="First page">⏮</button>
+                              <button onClick={() => handleReferredUsersPageChange(referredUsersPagination.page_number - 1)} disabled={referredUsersPagination.page_number === 1} title="Previous page">◀</button>
+                              <span className="page-indicator">Page {referredUsersPagination.page_number} of {getReferredUsersTotalPages()}</span>
+                              <button onClick={() => handleReferredUsersPageChange(referredUsersPagination.page_number + 1)} disabled={referredUsersPagination.page_number >= getReferredUsersTotalPages()} title="Next page">▶</button>
+                              <button onClick={() => handleReferredUsersPageChange(getReferredUsersTotalPages())} disabled={referredUsersPagination.page_number >= getReferredUsersTotalPages()} title="Last page">⏭</button>
+                            </div>
+                          </>
+                        )}
+                        </div>
+                      )}
+                        </>
+                      )}
                     </div>
                   )}
                   {activeMenu === 'Orders' && (
@@ -1398,6 +1720,30 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showInviteModal && (
+        <div className="login-modal-overlay" onClick={() => setShowInviteModal(false)}>
+          <div className="login-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-button" onClick={() => setShowInviteModal(false)}>×</button>
+            <h2>Invite Friends</h2>
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="text"
+                value={inviteEmails}
+                onChange={(e) => { setInviteEmails(e.target.value); setInviteError(''); }}
+                placeholder="friend@example.com"
+                className={inviteError ? 'input-error' : ''}
+              />
+              <small>Use commas for multiple email addresses.</small>
+              {inviteError && <span className="error-message">{inviteError}</span>}
+            </div>
+            <button className="submit-button" onClick={handleInviteNow} disabled={isInviting}>
+              {isInviting ? 'Sending...' : 'Invite Now'}
+            </button>
           </div>
         </div>
       )}

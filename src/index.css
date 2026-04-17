@@ -72,3 +72,8 @@ a:hover {
   padding: 0;
 }
 
+
+.required-asterisk {
+  color: #d32f2f;
+  margin-left: 2px;
+}

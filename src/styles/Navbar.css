@@ -1119,3 +1119,233 @@
     transform: rotate(360deg);
   }
 }
+
+/* Referrals Styles */
+.referrals-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.referral-code-section {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.referral-invite-section {
+  display: flex;
+}
+
+.invite-friends-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.invite-friends-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.referred-users-section h4 {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.login-modal small {
+  display: block;
+  color: #999;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.request-referral-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.request-referral-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.request-referral-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.referral-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.referral-subtitle {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0;
+}
+
+.referral-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.copy-code-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  color: #444;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.copy-code-btn:hover {
+  background: #ebebeb;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+.copy-code-btn.copied {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+  cursor: default;
+  box-shadow: none;
+}
+
+.referral-helper-text {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 16px 0;
+}
+
+.apply-referral-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.apply-referral-input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.apply-referral-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.apply-referral-input.input-error {
+  border-color: #d32f2f;
+}
+
+.apply-referral-btn {
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.apply-referral-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.apply-referral-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.signup-modal {
+  max-width: 520px;
+}
+
+.signup-modal label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.signup-modal select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: white;
+  color: #333;
+  cursor: pointer;
+}
+
+.signup-modal select.input-error {
+  border-color: #d32f2f;
+}
+
+.signup-modal select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.signup-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.signup-prompt {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.optional-label {
+  font-weight: 400;
+  color: #999;
+  font-size: 0.85rem;
+}
