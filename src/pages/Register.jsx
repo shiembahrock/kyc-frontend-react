@@ -100,6 +100,11 @@ const Register = () => {
     }
   };
 
+  const handleSignInClick = () => {
+    sessionStorage.setItem('openUserProfile', 'true');
+    navigate('/');
+  };
+
   return (
     <div className="register-page">
       <div className="register-card">
@@ -120,7 +125,7 @@ const Register = () => {
               {errors.firstName && <span className="error-message">{errors.firstName}</span>}
             </div>
             <div className="register-form-group">
-              <label>Last Name <span className="required-asterisk">*</span></label>
+              <label>Last Name <span className="required-asterisk\">*</span></label>
               <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last name" className={errors.lastName ? 'input-error' : ''} />
               {errors.lastName && <span className="error-message">{errors.lastName}</span>}
             </div>
@@ -167,7 +172,7 @@ const Register = () => {
           <button type="submit" className="register-submit-btn" disabled={isSubmitting}>
             {isSubmitting ? 'Creating Account...' : 'Sign Up'}
           </button>
-          <p className="register-signin-prompt">Already have an account? <a className="register-link" onClick={() => navigate('/')}>Sign in</a></p>
+          <p className="register-signin-prompt">Already have an account? <a className="register-link" onClick={handleSignInClick}>Sign in</a></p>
         </form>
       </div>
     </div>

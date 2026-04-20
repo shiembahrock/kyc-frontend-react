@@ -108,6 +108,14 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
   }, [showLoginModal, externalSetShowLoginModal]);
 
   useEffect(() => {
+    const openUserProfile = sessionStorage.getItem('openUserProfile');
+    if (openUserProfile === 'true') {
+      handleUserIconClick();
+      sessionStorage.removeItem('openUserProfile');
+    }
+  }, []);
+
+  useEffect(() => {
     const navbar = document.querySelector('.navbar');
     if (navbar) {
       setNavbarHeight(navbar.offsetHeight);
