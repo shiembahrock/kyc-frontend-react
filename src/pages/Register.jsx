@@ -108,6 +108,9 @@ const Register = () => {
   return (
     <div className="register-page">
       <div className="register-card">
+        <button className="back-button" onClick={() => navigate('/')}>
+          ← Home
+        </button>
         <div className="register-header">
           <h1>Create an Account</h1>
           <p>Join us today and get started</p>
@@ -125,7 +128,7 @@ const Register = () => {
               {errors.firstName && <span className="error-message">{errors.firstName}</span>}
             </div>
             <div className="register-form-group">
-              <label>Last Name <span className="required-asterisk\">*</span></label>
+              <label>Last Name <span className="required-asterisk">*</span></label>
               <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last name" className={errors.lastName ? 'input-error' : ''} />
               {errors.lastName && <span className="error-message">{errors.lastName}</span>}
             </div>
