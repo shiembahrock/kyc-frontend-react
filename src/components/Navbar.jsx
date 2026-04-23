@@ -1480,6 +1480,9 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                                     <th className="sortable-header" onClick={() => handleReferredUsersSortChange('email')}>
                                       Email {getReferredUsersSortIcon('email')}
                                     </th>
+                                    <th className="sortable-header" onClick={() => handleReferredUsersSortChange('source_type_name')}>
+                                      Type {getReferredUsersSortIcon('source_type_name')}
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1487,6 +1490,7 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                                     <tr key={index}>
                                       <td>{new Date(user.created_at).toLocaleString()}</td>
                                       <td>{user.email}</td>
+                                      <td>{user.source_type_name}</td>
                                     </tr>
                                   ))}
                                 </tbody>
