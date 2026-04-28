@@ -96,7 +96,7 @@ const Pricing = () => {
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
         }
-        
+
         const data = await response.json();
         
         // Transform API data to pricing plans
@@ -104,10 +104,43 @@ const Pricing = () => {
           const planIndex = index + 1;
           const formattedPrice = `${item.currency_code}${item.currency_symbol}${parseFloat(item.price).toFixed(2)}`;
           
+          let discountData = [];
+          let finalPrice = item.price;
+          let hasCategory1Discount = false;
+          
+          if (item.discounts && item.discounts.length > 0) {
+            item.discounts.forEach((discountItem) => {
+              const message = discountItem.discount_description;
+              const discountName = discountItem.discount_name;
+              
+              if (discountItem.discount_category === 1) {
+                hasCategory1Discount = true;
+                
+                if (discountItem.discount_type === 1) {
+                  finalPrice = finalPrice - (finalPrice * discountItem.discount_value / 100);
+                } else if (discountItem.discount_type === 2) {
+                  finalPrice = finalPrice - discountItem.discount_value;
+                }
+              }
+              
+              if (message) {
+                discountData.push({
+                  name: discountName,
+                  message: message
+                });
+              }
+            });
+          }
+          
+          const formattedFinalPrice = `${item.currency_code}${item.currency_symbol}${parseFloat(finalPrice).toFixed(2)}`;
+          
           return {
             id: item.service_price_id,
             name: item.service_name,
             price: formattedPrice,
+            finalPrice: formattedFinalPrice,
+            hasCategory1Discount: hasCategory1Discount,
+            discountData: discountData,
             features: defaultFeatures[planIndex] || defaultFeatures[1],
             popular: item.is_popular,
             sortOrder: item.sort_order
@@ -150,16 +183,31 @@ const Pricing = () => {
           {plans.map((plan, index) => (
             <div 
               key={plan.id} 
-              // className={`pricing-card fade-in-up ${plan.popular ? 'popular' : ''} ${index === plans.length - 1 ? 'coming-soon' : ''}`}
               className={`pricing-card fade-in-up ${plan.popular ? 'popular' : ''} ${index === plans.length - 0 ? 'coming-soon' : ''}`}
               ref={(el) => (cardRefs.current[index] = el)}
             >
               {plan.popular && <div className="badge">Most Popular</div>}
-              {/* {index === plans.length - 1 && <div className="coming-soon-overlay"><span>Coming Soon</span></div>} */}
               {index === plans.length - 0 && <div className="coming-soon-overlay"><span>Coming Soon</span></div>}
               <h3>{plan.name}</h3>
               <div className="price">
-                <span className="amount">{plan.price}</span>
+                {plan.hasCategory1Discount ? (
+                  <>
+                    <span className="amount strikethrough">{plan.price}</span>
+                    <span className="final-price">{plan.finalPrice}</span>
+                  </>
+                ) : (
+                  <span className="amount">{plan.price}</span>
+                )}
+                {plan.discountData && plan.discountData.length > 0 && (
+                  <div className="discount-messages">
+                    {plan.discountData.map((discount, idx) => (
+                      <div key={idx} className="discount-message">
+                        <p className="discount-name">{discount.name}</p>
+                        <p className="discount-text">{discount.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <ul className="features">
                 {plan.features.map((feature, index) => (
@@ -172,7 +220,7 @@ const Pricing = () => {
               <button 
                 className="pricing-button"
                 onClick={() => navigate(`/complete-order/${plan.id}`)}
-                disabled={plan.sortOrder === 3} // Disable Enterprise plan button
+                disabled={plan.sortOrder === 3}
               >
                 ORDER NOW
               </button>
