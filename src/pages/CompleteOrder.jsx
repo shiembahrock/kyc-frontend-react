@@ -26,6 +26,13 @@ const CompleteOrder = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [referralCodeError, setReferralCodeError] = useState('');
+  const [isCheckingReferralCode, setIsCheckingReferralCode] = useState(false);
+  const [isReferralCodeValid, setIsReferralCodeValid] = useState(false);
+  const [referralCodeSuccessMessage, setReferralCodeSuccessMessage] = useState('');
+  const [showReferralCodeField, setShowReferralCodeField] = useState(false);
+  const [finalPrice, setFinalPrice] = useState(null);
   const hasValidated = useRef(false);
 
   const validateEmail = (email) => {
@@ -103,6 +110,12 @@ const CompleteOrder = () => {
         const service = await serviceResponse.json();
         setServiceData(service);
 
+        // Check if service has discount_category == 2
+        const hasCategory2Discount = service.discounts && 
+          Array.isArray(service.discounts) && 
+          service.discounts.some(discount => discount.discount_category === 2);
+        setShowReferralCodeField(hasCategory2Discount);
+
         // Fetch countries
         const countriesResponse = await fetch(`${API_BASE_URL}/countries`);
         if (!countriesResponse.ok) {
@@ -126,6 +139,23 @@ const CompleteOrder = () => {
               country: parsedUserInfo.guest_account.country_id || prev.country,
               phone: parsedUserInfo.guest_account.phone || prev.phone
             }));
+            
+            // Fetch referral code if user is logged in
+            try {
+              const referralResponse = await fetch(`${API_BASE_URL}/get-referral-code`, {
+                headers: {
+                  'Authorization': `Bearer ${parsedUserInfo.token}`
+                }
+              });
+              if (referralResponse.ok) {
+                const referralData = await referralResponse.json();
+                if (referralData.referred_by && referralData.referred_by.trim()) {
+                  setReferralCode(referralData.referred_by);
+                }
+              }
+            } catch (err) {
+              console.error('Error fetching referral code:', err);
+            }
           }
         }
         
@@ -159,6 +189,126 @@ const CompleteOrder = () => {
     }
   };
 
+  const handleReferralCodeChange = (e) => {
+    const { value } = e.target;
+    setReferralCode(value);
+    setReferralCodeError('');
+    setIsReferralCodeValid(false);
+  };
+
+  const handleCheckReferralCode = async () => {
+    if (!referralCode.trim()) {
+      setReferralCodeError('Referral code is required');
+      return;
+    }
+
+    // Validate mandatory fields
+    const newErrors = {};
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First Name is required';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last Name is required';
+    }
+
+    if (!formData.companyName.trim()) {
+      newErrors.companyName = 'Company Name is required';
+    }
+
+    if (!formData.country) {
+      newErrors.country = 'Country is required';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone is required';
+    } else if (!validatePhone(formData.phone)) {
+      newErrors.phone = 'Phone must include country code (e.g., +1234567890)';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setReferralCodeError('Please fill in all mandatory fields first');
+      return;
+    }
+
+    try {
+      setIsCheckingReferralCode(true);
+      
+      // Get discount_id from category 2 discount
+      let discountId = null;
+      if (serviceData && serviceData.discounts && Array.isArray(serviceData.discounts)) {
+        const category2Discount = serviceData.discounts.find(discount => discount.discount_category === 2);
+        if (category2Discount) {
+          discountId = category2Discount.discount_id;
+        }
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/guest-account/validate-referral-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: formData.email,
+          referral_code: referralCode,
+          service_id: serviceId,
+          discount_id: discountId
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'Valid') {
+        setIsReferralCodeValid(true);
+        setReferralCodeError('');
+        setReferralCodeSuccessMessage(data.message || 'Referral code is valid');
+        
+        // Calculate final price based on category 2 discount
+        if (serviceData && serviceData.discounts && Array.isArray(serviceData.discounts)) {
+          const category2Discount = serviceData.discounts.find(discount => discount.discount_category === 2);
+          if (category2Discount) {
+            const originalPrice = parseFloat(serviceData.price);
+            let calculatedFinalPrice = originalPrice;
+            
+            if (category2Discount.discount_type === 1) {
+              // Percentage discount
+              calculatedFinalPrice = originalPrice - (category2Discount.discount_value / 100 * originalPrice);
+            } else if (category2Discount.discount_type === 2) {
+              // Fixed amount discount
+              calculatedFinalPrice = originalPrice - category2Discount.discount_value;
+            }
+            
+            setFinalPrice(calculatedFinalPrice);
+          }
+        }
+      } else if (data.status === 'Invalid') {
+        setReferralCodeError(data.message || 'Invalid referral code');
+        setIsReferralCodeValid(false);
+        setReferralCodeSuccessMessage('');
+        setFinalPrice(null);
+      } else {
+        setReferralCodeError('Unexpected response from server');
+        setIsReferralCodeValid(false);
+        setReferralCodeSuccessMessage('');
+        setFinalPrice(null);
+      }
+    } catch (err) {
+      console.error('Error validating referral code:', err);
+      setReferralCodeError('Error validating referral code');
+      setIsReferralCodeValid(false);
+      setReferralCodeSuccessMessage('');
+      setFinalPrice(null);
+    } finally {
+      setIsCheckingReferralCode(false);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -178,6 +328,15 @@ const CompleteOrder = () => {
       const currencyId = serviceData?.currency || '';
       const currencyCode = serviceData?.currency_code || '';
 
+      // Get discount_id from category 2 discount
+      let discountId = null;
+      if (serviceData && serviceData.discounts && Array.isArray(serviceData.discounts)) {
+        const category2Discount = serviceData.discounts.find(discount => discount.discount_category === 2);
+        if (category2Discount) {
+          discountId = category2Discount.discount_id;
+        }
+      }
+
       const res = await fetch(`${API_BASE_URL}/checkout/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -194,6 +353,8 @@ const CompleteOrder = () => {
           currency_code: currencyCode,
           cancel_url: cancelUrl,
           success_url: successUrl,
+          referral_code: referralCode || null,
+          discount_id: discountId || null
         }),
       });
 
@@ -247,11 +408,18 @@ const CompleteOrder = () => {
           {serviceData && (
             <div className="service-summary">
               <h2>{serviceData.service_name}</h2>
-              <p className="service-price">
+              <p className="service-price" style={finalPrice ? { textDecoration: 'line-through' } : {}}>
                 {serviceData.currency_code}
                 {serviceData.currency_symbol}
                 {parseFloat(serviceData.price).toFixed(2)}
               </p>
+              {finalPrice && (
+                <p className="final-price-display">
+                  {serviceData.currency_code}
+                  {serviceData.currency_symbol}
+                  {finalPrice.toFixed(2)}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -349,7 +517,33 @@ const CompleteOrder = () => {
             {errors.phone && <span className="error-message">{errors.phone}</span>}
           </div>
 
-          <button type="submit" className="submit-btn">Complete Order</button>
+          {showReferralCodeField && (
+            <div className="form-group">
+              <label htmlFor="referralCode">Referral Code (Optional)</label>
+              <div className="referral-code-input-group">
+                <input
+                  type="text"
+                  id="referralCode"
+                  value={referralCode}
+                  onChange={handleReferralCodeChange}
+                  placeholder="Enter referral code"
+                  className={referralCodeError ? 'input-error' : isReferralCodeValid ? 'input-success' : ''}
+                />
+                <button
+                  type="button"
+                  className="check-referral-btn"
+                  onClick={handleCheckReferralCode}
+                  disabled={!referralCode.trim() || isReferralCodeValid || isCheckingReferralCode}
+                >
+                  {isCheckingReferralCode ? 'Checking...' : 'Check'}
+                </button>
+              </div>
+              {referralCodeError && <span className="error-message">{referralCodeError}</span>}
+              {isReferralCodeValid && <span className="success-message">{referralCodeSuccessMessage}</span>}
+            </div>
+          )}
+
+          <button type="submit" className="submit-btn" disabled={referralCode.trim() && !isReferralCodeValid}>Complete Order</button>
         </form>
 
         {showConfirmation && (
@@ -360,16 +554,21 @@ const CompleteOrder = () => {
                 <p><strong>Email:</strong> {formData.email}</p>
                 <p><strong>Name:</strong> {formData.firstName} {formData.lastName}</p>
                 <p><strong>Company:</strong> {formData.companyName}</p>
-                <p><strong>Phone:</strong> {formData.phone}</p>
-                {serviceData && <p><strong>Service:</strong> {serviceData.service_name}</p>}
-                {serviceData && (
-                  <p><strong>Price:</strong> {serviceData.currency_code}{serviceData.currency_symbol}{parseFloat(serviceData.price).toFixed(2)}</p>
+                <p><strong>Service:</strong> {serviceData?.service_name}</p>
+                {finalPrice ? (
+                  <>
+                    <p><strong>Original Price:</strong> <span style={{ textDecoration: 'line-through' }}>{serviceData?.currency_code}{serviceData?.currency_symbol}{parseFloat(serviceData?.price || 0).toFixed(2)}</span></p>
+                    {referralCode && isReferralCodeValid && <p><strong>Referral Code:</strong> {referralCode}</p>}
+                    <p><strong>Final Price:</strong> {serviceData?.currency_code}{serviceData?.currency_symbol}{finalPrice.toFixed(2)}</p>
+                  </>
+                ) : (
+                  <p><strong>Price:</strong> {serviceData?.currency_code}{serviceData?.currency_symbol}{parseFloat(serviceData?.price || 0).toFixed(2)}</p>
                 )}
               </div>
               <div className="modal-buttons">
-                <button className="btn-cancel" onClick={handleCancel} disabled={isProcessing}>Cancel</button>
+                <button className="btn-cancel" onClick={handleCancel}>Cancel</button>
                 <button className="btn-proceed" onClick={handleProceed} disabled={isProcessing}>
-                  {isProcessing ? 'Processing...' : 'Proceed'}
+                  {isProcessing ? 'Processing...' : 'Proceed to Payment'}
                 </button>
               </div>
             </div>

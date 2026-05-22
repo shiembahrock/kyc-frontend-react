@@ -68,6 +68,13 @@
   margin: 0;
 }
 
+.final-price-display {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffc107;
+  margin: 10px 0 0 0;
+}
+
 .order-form {
   display: flex;
   flex-direction: column;
@@ -120,6 +127,72 @@
   display: block;
 }
 
+.success-message {
+  color: #2e7d32;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.referral-code-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.referral-code-input-group input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.referral-code-input-group input::placeholder {
+  color: #999;
+}
+
+.referral-code-input-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.referral-code-input-group input.input-error {
+  border-color: #d32f2f;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.referral-code-input-group input.input-success {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.check-referral-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.check-referral-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.check-referral-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .form-group select {
   cursor: pointer;
   appearance: none;
@@ -128,6 +201,11 @@
   background-position: right 10px center;
   background-size: 20px;
   padding-right: 35px;
+}
+
+.form-group input.input-success {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
 
 .form-row {
@@ -177,6 +255,14 @@
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .referral-code-input-group {
+    flex-direction: column;
+  }
+
+  .check-referral-btn {
+    width: 100%;
   }
 }
 
