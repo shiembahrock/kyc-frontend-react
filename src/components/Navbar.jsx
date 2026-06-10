@@ -1579,7 +1579,10 @@ const Navbar = ({ showLoginModal: externalShowLoginModal, setShowLoginModal: ext
                                           )}
                                           {order.usage_status === 1 && order.payment_status === 'paid' && (
                                             <>
-                                              <a href={`/Search-Service?ordercode=${order.order_code}`} className="action-btn">
+                                              {/* <a href={`/Search-Service?ordercode=${order.order_code}`} className="action-btn">
+                                                🔍
+                                              </a> */}
+                                              <a href={`/Payment-Success?ordercode=${order.order_code}`} className="action-btn">
                                                 🔍
                                               </a>
                                               {order.psp_stripe_receipt_url && (

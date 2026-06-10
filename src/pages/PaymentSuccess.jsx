@@ -60,7 +60,8 @@ function PaymentSuccess() {
             <div className="success-message">
               <p>Thank you for ordering our service.</p>
               {isLoggedIn ? (
-                <p>Go to <a href={`/Search-Service?ordercode=${orderCode || ''}`}>Search Service</a> page OR</p>
+                // <p>Go to <a href={`/Search-Service?ordercode=${orderCode || ''}`}>Search Service</a> page OR</p>
+                <p></p>
               ) : (
                 <p>You are not logged in yet, please <a href="#" onClick={handleLoginClick}>LOGIN</a> to continue using our service OR</p>
               )}
