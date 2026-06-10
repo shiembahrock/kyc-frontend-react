@@ -12,7 +12,23 @@ if (!RECAPTCHA_SITE_KEY) {
 const ContactUs = () => {
   const titleRef = useRef(null);
   const infoRef = useRef(null);
-  const formRef = useRef(null);
+  const recaptchaRef = useRef(null);
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: ''
+  });
+  const [isReadOnly, setIsReadOnly] = useState({
+    name: false,
+    email: false,
+    phone: false
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -28,28 +44,9 @@ const ContactUs = () => {
 
     if (titleRef.current) observer.observe(titleRef.current);
     if (infoRef.current) observer.observe(infoRef.current);
-    if (formRef.current) observer.observe(formRef.current);
 
     return () => observer.disconnect();
   }, []);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
-  });
-  const [isReadOnly, setIsReadOnly] = useState({
-    name: false,
-    email: false,
-    phone: false
-  });
-  const [phoneError, setPhoneError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showCaptcha, setShowCaptcha] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(null);
-  const [formErrors, setFormErrors] = useState({});
-  const recaptchaRef = useRef(null);
 
   useEffect(() => {
     const updateFormData = () => {
@@ -98,10 +95,6 @@ const ContactUs = () => {
       ...prev,
       [name]: value
     }));
-    
-    if (name === 'phone') {
-      setPhoneError('');
-    }
   };
 
   const validatePhone = (phone) => {
@@ -128,7 +121,7 @@ const ContactUs = () => {
     setCaptchaToken(token);
   };
 
-  const handleCaptchaClose = () => {
+  const handleBackClick = () => {
     setShowCaptcha(false);
     setCaptchaToken(null);
     if (recaptchaRef.current) {
@@ -143,7 +136,6 @@ const ContactUs = () => {
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      setPhoneError(errors.phone || '');
       return;
     }
     
@@ -187,7 +179,7 @@ const ContactUs = () => {
       
       alert('Thank you for your message! We will get back to you soon.');
       setFormData({ name: '', email: '', phone: '', message: '' });
-      setPhoneError('');
+      setFormErrors({});
       setShowCaptcha(false);
       setCaptchaToken(null);
       if (recaptchaRef.current) {
@@ -196,11 +188,6 @@ const ContactUs = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again later.');
-      setShowCaptcha(false);
-      setCaptchaToken(null);
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset();
-      }
     } finally {
       setIsSubmitting(false);
     }
@@ -214,15 +201,10 @@ const ContactUs = () => {
           <div ref={infoRef} className="contact-info fade-in-left">
             <div className="info-item">
               <h3>📍 Address</h3>
-              {/* <p>Shenton Way, Singapore<br />#23-01 Singapore 068805</p> */}
               <a href="https://maps.app.goo.gl/vW6L42WrDiUUHjAa8" target="_blank" className="social-link">                
                 16 Raffles Quay #30-01 Hong Leong Building Singapore 048581
               </a>
             </div>
-            {/* <div className="info-item">
-              <h3>📞 Phone</h3>
-              <p>+1 (555) 123-4567</p>
-            </div> */}
             <div className="info-item">
               <h3>✉️ Email</h3>
               <a href="mailto:regtech@enigmatig.com">regtech@enigmatig.com</a>
@@ -234,7 +216,7 @@ const ContactUs = () => {
           </div>
 
           {!showCaptcha ? (
-            <form ref={formRef} className="contact-form fade-in-right" onSubmit={handleSubmit}>
+            <form className="contact-form fade-in-right" onSubmit={handleSubmit} style={{ animation: 'fadeInRight 1s ease forwards' }}>
               <div className="form-group">
                 <label htmlFor="name">Name</label>
                 <input
@@ -297,7 +279,7 @@ const ContactUs = () => {
               </button>
             </form>
           ) : (
-            <div className="captcha-container">
+            <div className="captcha-wrapper-outer">
               <div className="captcha-content">
                 <h3>Verify you're human</h3>
                 <p>Please complete the reCAPTCHA below to send your message</p>
@@ -315,7 +297,7 @@ const ContactUs = () => {
                 <div className="captcha-buttons">
                   <button
                     type="button"
-                    className="submit-button"
+                    className="btn-submit"
                     onClick={handleSubmit}
                     disabled={isSubmitting || !captchaToken}
                   >
@@ -323,8 +305,8 @@ const ContactUs = () => {
                   </button>
                   <button
                     type="button"
-                    className="cancel-button"
-                    onClick={handleCaptchaClose}
+                    className="btn-back"
+                    onClick={handleBackClick}
                     disabled={isSubmitting}
                   >
                     Back
