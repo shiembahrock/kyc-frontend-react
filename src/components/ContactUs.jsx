@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReCAPTCHA from "react-google-recaptcha";
 import { API_EXTERNAL_BASE_URL, ADMINISTRATOR_EMAIL_ADDRESS } from '../config';
 import '../styles/ContactUs.css';
+
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
+if (!RECAPTCHA_SITE_KEY) {
+  console.warn('reCAPTCHA site key is not configured. Add VITE_RECAPTCHA_SITE_KEY to .env file');
+}
 
 const ContactUs = () => {
   const titleRef = useRef(null);
@@ -39,6 +46,10 @@ const ContactUs = () => {
   });
   const [phoneError, setPhoneError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+  const recaptchaRef = useRef(null);
 
   useEffect(() => {
     const updateFormData = () => {
@@ -98,11 +109,54 @@ const ContactUs = () => {
     return phoneRegex.test(phone.replace(/[\s()-]/g, ''));
   };
 
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.name.trim()) errors.name = 'Name is required';
+    if (!formData.email.trim()) errors.email = 'Email is required';
+    if (!formData.phone.trim()) {
+      errors.phone = 'Phone is required';
+    } else if (!validatePhone(formData.phone)) {
+      errors.phone = 'Please enter a valid phone number with country code (e.g., +1234567890)';
+    }
+    if (!formData.message.trim()) errors.message = 'Message is required';
+    
+    return errors;
+  };
+
+  const handleCaptchaChange = (token) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaClose = () => {
+    setShowCaptcha(false);
+    setCaptchaToken(null);
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validatePhone(formData.phone)) {
-      setPhoneError('Please enter a valid phone number with country code (e.g., +1234567890)');
+    // Step 1: Validate form
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setPhoneError(errors.phone || '');
+      return;
+    }
+    
+    // Step 2: Show captcha if form is valid
+    if (!showCaptcha) {
+      setShowCaptcha(true);
+      setFormErrors({});
+      return;
+    }
+    
+    // Step 3: Verify captcha token exists before submitting
+    if (!captchaToken) {
+      alert('Please complete the reCAPTCHA verification');
       return;
     }
     
@@ -115,10 +169,11 @@ const ContactUs = () => {
         to_email: ADMINISTRATOR_EMAIL_ADDRESS,
         subject: 'KYC&AML - ContactUs',
         body: emailBody,
-        is_html: true
+        is_html: true,
+        recaptcha_token: captchaToken
       };
       
-      const response = await fetch(`${API_EXTERNAL_BASE_URL}/sendemailsmtp`, {
+      const response = await fetch(`${API_EXTERNAL_BASE_URL}/submitcontactus`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -133,9 +188,19 @@ const ContactUs = () => {
       alert('Thank you for your message! We will get back to you soon.');
       setFormData({ name: '', email: '', phone: '', message: '' });
       setPhoneError('');
+      setShowCaptcha(false);
+      setCaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again later.');
+      setShowCaptcha(false);
+      setCaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -168,62 +233,106 @@ const ContactUs = () => {
             </div>
           </div>
 
-          <form ref={formRef} className="contact-form fade-in-right" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="name">Name</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                readOnly={isReadOnly.name}
-                required
-              />
+          {!showCaptcha ? (
+            <form ref={formRef} className="contact-form fade-in-right" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  readOnly={isReadOnly.name}
+                  className={formErrors.name ? 'error' : ''}
+                  required
+                />
+                {formErrors.name && <span className="error-message">{formErrors.name}</span>}
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  readOnly={isReadOnly.email}
+                  className={formErrors.email ? 'error' : ''}
+                  required
+                />
+                {formErrors.email && <span className="error-message">{formErrors.email}</span>}
+              </div>
+              <div className="form-group">
+                <label htmlFor="phone">Phone</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+1234567890"
+                  className={formErrors.phone ? 'error' : ''}
+                  readOnly={isReadOnly.phone}
+                  required
+                />
+                {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
+                <small className="input-hint">Format: +[country code][number] (e.g., +6512345678, +14155551234)</small>
+              </div>
+              <div className="form-group">
+                <label htmlFor="message">Message</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows="5"
+                  className={formErrors.message ? 'error' : ''}
+                  required
+                ></textarea>
+                {formErrors.message && <span className="error-message">{formErrors.message}</span>}
+              </div>
+              <button type="submit" className="submit-button" disabled={isSubmitting}>
+                Send Message
+              </button>
+            </form>
+          ) : (
+            <div className="captcha-container">
+              <div className="captcha-content">
+                <h3>Verify you're human</h3>
+                <p>Please complete the reCAPTCHA below to send your message</p>
+                <div className="recaptcha-wrapper">
+                  {RECAPTCHA_SITE_KEY ? (
+                    <ReCAPTCHA
+                      ref={recaptchaRef}
+                      sitekey={RECAPTCHA_SITE_KEY}
+                      onChange={handleCaptchaChange}
+                    />
+                  ) : (
+                    <p style={{ color: '#dc3545' }}>Error: reCAPTCHA site key not configured</p>
+                  )}
+                </div>
+                <div className="captcha-buttons">
+                  <button
+                    type="button"
+                    className="submit-button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !captchaToken}
+                  >
+                    {isSubmitting ? 'Sending...' : 'Submit'}
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-button"
+                    onClick={handleCaptchaClose}
+                    disabled={isSubmitting}
+                  >
+                    Back
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                readOnly={isReadOnly.email}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="phone">Phone</label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+1234567890"
-                className={phoneError ? 'error' : ''}
-                readOnly={isReadOnly.phone}
-                required
-              />
-              {phoneError && <span className="error-message">{phoneError}</span>}
-              <small className="input-hint">Format: +[country code][number] (e.g., +6512345678, +14155551234)</small>
-            </div>
-            <div className="form-group">
-              <label htmlFor="message">Message</label>
-              <textarea
-                id="message"
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                rows="5"
-                required
-              ></textarea>
-            </div>
-            <button type="submit" className="submit-button" disabled={isSubmitting}>
-              {isSubmitting ? 'Sending...' : 'Send Message'}
-            </button>
-          </form>
+          )}
         </div>
       </div>
     </section>
