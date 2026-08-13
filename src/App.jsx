@@ -8,6 +8,7 @@ import CompleteOrder from './pages/CompleteOrder'
 import PaymentSuccess from './pages/PaymentSuccess'
 import SearchService from './pages/SearchService'
 import Register from './pages/Register'
+import RouteScrollToTop from './components/RouteScrollToTop'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <ModalProvider>
           <Router>
             <div className="App">
+              <RouteScrollToTop />
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/complete-order/:serviceId" element={<CompleteOrder />} />
