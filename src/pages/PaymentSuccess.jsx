@@ -59,13 +59,13 @@ function PaymentSuccess() {
             <h1>Thank You!</h1>
             <div className="success-message">
               <p>Thank you for ordering our service.</p>
+              <p>Please check your email inbox for an email from <strong>Pass &lt;donotreply@muinmos.com&gt;</strong> with the subject <strong>&quot;Assessment Invitation&quot;</strong> and follow the instructions in the email to proceed. If you do not see the email, please check your Junk or Spam folder. If you still have not received it after 15 minutes, please contact us for assistance.</p>
               {isLoggedIn ? (
                 // <p>Go to <a href={`/Search-Service?ordercode=${orderCode || ''}`}>Search Service</a> page OR</p>
                 <p></p>
               ) : (
-                <p>You are not logged in yet, please <a href="#" onClick={handleLoginClick}>LOGIN</a> to continue using our service OR</p>
-              )}
-              <p>Please check your email inbox, find the email sent from <strong>Pass</strong> with the subject <strong>Assessment Invitation</strong> to proceed.</p>
+                <p>You may also <a href="#" onClick={handleLoginClick}>LOGIN</a> to view your order history and check the status of your order.</p>
+              )}              
               {orderCode && (
                 <div className="order-code">
                   <strong>Order Code:</strong> {orderCode}
