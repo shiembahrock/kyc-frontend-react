@@ -62,10 +62,6 @@ const CompleteOrder = () => {
       newErrors.lastName = 'Last Name is required';
     }
 
-    if (!formData.companyName.trim()) {
-      newErrors.companyName = 'Company Name is required';
-    }
-
     if (!formData.country) {
       newErrors.country = 'Country is required';
     }
@@ -219,10 +215,6 @@ const CompleteOrder = () => {
       newErrors.lastName = 'Last Name is required';
     }
 
-    if (!formData.companyName.trim()) {
-      newErrors.companyName = 'Company Name is required';
-    }
-
     if (!formData.country) {
       newErrors.country = 'Country is required';
     }
@@ -344,7 +336,7 @@ const CompleteOrder = () => {
           email: formData.email,
           first_name: formData.firstName,
           last_name: formData.lastName,
-          company_name: formData.companyName,
+          company_name: formData.companyName.trim() || null,
           country_id: formData.country,
           phone: formData.phone,
           service_id: serviceId,
@@ -471,14 +463,14 @@ const CompleteOrder = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="companyName">Company Name <span className="required-asterisk">*</span></label>
+            <label htmlFor="companyName">Company Name</label>
             <input
               type="text"
               id="companyName"
               name="companyName"
               value={formData.companyName}
               onChange={handleChange}
-              placeholder="Your Company Name"
+              placeholder="Your Company Name (Optional)"
               className={errors.companyName ? 'input-error' : ''}
             />
             {errors.companyName && <span className="error-message">{errors.companyName}</span>}
@@ -553,7 +545,7 @@ const CompleteOrder = () => {
               <div className="confirmation-details">
                 <p><strong>Email:</strong> {formData.email}</p>
                 <p><strong>Name:</strong> {formData.firstName} {formData.lastName}</p>
-                <p><strong>Company:</strong> {formData.companyName}</p>
+                {formData.companyName.trim() && <p><strong>Company:</strong> {formData.companyName}</p>}
                 <p><strong>Service:</strong> {serviceData?.service_name}</p>
                 {finalPrice ? (
                   <>
